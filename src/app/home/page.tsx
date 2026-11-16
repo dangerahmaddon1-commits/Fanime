@@ -2,6 +2,8 @@ import Link from "next/link";
 import { getRenimeProviderOrder } from "@/lib/providers/provider-order";
 import type { ProviderAnime, ProviderHome } from "@/lib/providers/types";
 
+export const dynamic = "force-dynamic";
+
 const languageOptions = ["Japanese", "English", "Hindi", "Tamil", "Telugu", "Korean", "Chinese"];
 type CatalogCard = { id: string; title: string; image?: string; meta?: string };
 type TrendingAnime = { id: number; title: { romaji?: string; english?: string }; coverImage: { large: string }; averageScore?: number };
