@@ -19,13 +19,13 @@ const sortValue = (value: string) => allowedSorts.includes(value) ? value : "TRE
 async function searchAnime(filters: Filters): Promise<{ items: SearchItem[]; source: string; notice?: string }> {
   const baseUrl = process.env.RENIME_API_BASE_URL?.trim();
   const hasFilters = Boolean(filters.genre || filters.year || filters.season || filters.format || filters.status);
-  if (filters.q && baseUrl && !hasFilters) {
+  if (filters.q && !hasFilters) {
     for (const provider of getRenimeProviderOrder(baseUrl)) {
       try {
         const results = await provider.search({ query: filters.q });
         if (results.length) {
           return {
-            source: provider.id === "renime-animesalt" ? "AnimeSalt" : "WatchAnimeWorld",
+            source: provider.id.includes("animesalt") ? "AnimeSalt" : "WatchAnimeWorld",
             items: results.map((item) => ({ id: item.id, title: item.title, image: item.image, type: item.type })),
           };
         }
