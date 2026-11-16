@@ -1,6 +1,6 @@
 import { load } from "cheerio";
 import { normalizeAudioLanguage } from "./languages";
-import type { AnimeProvider, AudioLanguage, EpisodeOptions, ProviderAnime, ProviderDetails, ProviderEpisode, ProviderHome, ProviderSource, SearchOptions, SourceOptions } from "./types";
+import type { AnimeProvider, EpisodeOptions, ProviderAnime, ProviderDetails, ProviderEpisode, ProviderHome, ProviderSource, SearchOptions, SourceOptions } from "./types";
 
 const PROVIDERS = {
   animesalt: { id: "animesalt", name: "AnimeSalt", baseUrl: "https://animesalt.cx" },
