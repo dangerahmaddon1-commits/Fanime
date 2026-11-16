@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { RenimeApiProvider } from "@/lib/providers/renime-api";
-import type { ProviderDetails } from "@/lib/providers/types";
+import type { ProviderDetails, ProviderEpisode } from "@/lib/providers/types";
 
 type AniListAnime = {
   id: number;
@@ -32,18 +32,33 @@ async function getAniListAnime(id: string): Promise<AniListAnime | null> {
   return json.data?.Media ?? null;
 }
 
-export default async function AnimeDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function AnimeDetailPage({ params, searchParams }: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ season?: string }>;
+}) {
   const { id } = await params;
+  const { season: seasonParam } = await searchParams;
   const baseUrl = process.env.RENIME_API_BASE_URL?.trim();
   const providerKey = process.env.RENIME_DEFAULT_PROVIDER === "watchanimeworld" ? "watchanimeworld" : "animesalt";
   let providerDetails: ProviderDetails | null = null;
   let providerError = false;
+  let selectedSeason = Math.max(1, Number(seasonParam) || 1);
+  let episodeList: ProviderEpisode[] = [];
 
   if (baseUrl) {
     try {
-      providerDetails = await new RenimeApiProvider(baseUrl, providerKey).details(id);
+      const provider = new RenimeApiProvider(baseUrl, providerKey);
+      providerDetails = await provider.details(id);
+      if (providerDetails.seasons.length && !providerDetails.seasons.includes(selectedSeason)) {
+        selectedSeason = providerDetails.seasons[0];
+      }
+      episodeList = providerDetails.episodes;
+      if (seasonParam && selectedSeason !== 1) {
+        episodeList = await provider.episodes({ animeId: id, season: selectedSeason });
+      }
     } catch {
       providerError = true;
+      providerDetails = null;
     }
   }
 
@@ -67,8 +82,10 @@ export default async function AnimeDetailPage({ params }: { params: Promise<{ id
     </div>
     <section className="mx-auto max-w-7xl px-5 py-10">
       <h2 className="text-2xl font-bold">Synopsis</h2><p className="mt-4 max-w-4xl whitespace-pre-line leading-8 text-neutral-300">{description || "No synopsis is available yet."}</p>
-      {providerDetails ? <section className="mt-12"><div className="flex flex-wrap items-end justify-between gap-4"><div><p className="text-xs font-bold tracking-[.25em] text-[var(--accent)]">EPISODE GUIDE</p><h2 className="mt-2 text-2xl font-bold">Episodes</h2></div><span className="text-sm text-neutral-500">{providerDetails.episodes.length} listed</span></div>
-        {providerDetails.episodes.length ? <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{providerDetails.episodes.map((episode) => <Link key={episode.id} href={`/watch/${encodeURIComponent(id)}/${encodeURIComponent(episode.id)}`} className="flex items-center gap-4 rounded-xl border border-white/10 bg-[#1b1b1b] p-3 transition hover:border-[var(--accent)]/50">{episode.image && <img src={episode.image} alt="" className="h-16 w-24 rounded-lg object-cover" loading="lazy" />}<div><p className="font-bold">Episode {episode.number}</p><p className="mt-1 text-sm text-neutral-400">{episode.title || title}</p></div><span className="ml-auto text-[var(--accent)]">▶</span></Link>)}</div> : <p className="mt-5 text-neutral-400">The provider did not return an episode list for this title.</p>}
+      {providerDetails ? <section className="mt-12">
+        <div className="flex flex-wrap items-end justify-between gap-4"><div><p className="text-xs font-bold tracking-[.25em] text-[var(--accent)]">EPISODE GUIDE</p><h2 className="mt-2 text-2xl font-bold">Episodes</h2></div><span className="text-sm text-neutral-500">{episodeList.length} listed</span></div>
+        {providerDetails.seasons.length > 1 && <div className="mt-5 flex flex-wrap gap-2">{providerDetails.seasons.map((season) => <Link key={season} href={`?season=${season}`} className={`rounded-lg border px-4 py-2 text-sm ${season === selectedSeason ? "border-[var(--accent)] bg-[var(--accent)]/10 text-[var(--accent)]" : "border-white/15 text-neutral-300 hover:border-white/40"}`}>Season {season}</Link>)}</div>}
+        {episodeList.length ? <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{episodeList.map((episode) => <Link key={episode.id} href={`/watch/${encodeURIComponent(id)}/${encodeURIComponent(episode.id)}`} className="flex items-center gap-4 rounded-xl border border-white/10 bg-[#1b1b1b] p-3 transition hover:border-[var(--accent)]/50">{episode.image && <img src={episode.image} alt="" className="h-16 w-24 rounded-lg object-cover" loading="lazy" />}<div><p className="font-bold">Episode {episode.number}</p><p className="mt-1 text-sm text-neutral-400">{episode.title || title}</p></div><span className="ml-auto text-[var(--accent)]">▶</span></Link>)}</div> : <p className="mt-5 text-neutral-400">The provider did not return an episode list for this season.</p>}
       </section> : <div className="mt-10 rounded-2xl border border-[var(--accent)]/30 bg-[#1b1b1b] p-6"><p className="font-bold">Episode availability</p><p className="mt-2 text-sm leading-6 text-neutral-400">{providerError ? "The configured episode provider is currently unavailable. General anime details are still available." : "This title is currently showing general catalog information. Episode listings will appear when a Renime API endpoint is configured."}</p><Link href="/search" className="mt-4 inline-block font-semibold text-[var(--accent)]">← Back to discovery</Link></div>}
     </section>
   </main>;
