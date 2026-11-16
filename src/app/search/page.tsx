@@ -51,16 +51,16 @@ async function searchAnime(filters: Filters): Promise<{ items: SearchItem[]; sou
   if (["TV", "TV_SHORT", "MOVIE", "OVA", "ONA", "SPECIAL"].includes(filters.format)) variables.format = filters.format;
   if (["RELEASING", "FINISHED", "NOT_YET_RELEASED"].includes(filters.status)) variables.status = filters.status;
 
-  const response = await fetch("https://graphql.anilist.co", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Accept: "application/json" },
-    body: JSON.stringify({
-      query: `query ($search: String, $genre: String, $seasonYear: Int, $season: MediaSeason, $format: MediaFormat, $status: MediaStatus, $sort: [MediaSort]) { Page(page: 1, perPage: 30) { media(search: $search, genre: $genre, seasonYear: $seasonYear, season: $season, format: $format, status: $status, type: ANIME, isAdult: false, sort: $sort) { id title { romaji english native } coverImage { large } episodes seasonYear format averageScore } } }`,
-      variables,
-    }),
-    next: { revalidate: 300 },
-  });
   try {
+    const response = await fetch("https://graphql.anilist.co", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify({
+        query: `query ($search: String, $genre: String, $seasonYear: Int, $season: MediaSeason, $format: MediaFormat, $status: MediaStatus, $sort: [MediaSort]) { Page(page: 1, perPage: 30) { media(search: $search, genre: $genre, seasonYear: $seasonYear, season: $season, format: $format, status: $status, type: ANIME, isAdult: false, sort: $sort) { id title { romaji english native } coverImage { large } episodes seasonYear format averageScore } } }`,
+        variables,
+      }),
+      next: { revalidate: 300 },
+    });
     if (!response.ok) throw new Error(`AniList returned HTTP ${response.status}`);
     const json = await response.json();
     const items: AniListAnime[] = json.data?.Page?.media ?? [];
