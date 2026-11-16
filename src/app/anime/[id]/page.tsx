@@ -54,7 +54,7 @@ export async function generateMetadata({ params, searchParams }: {
 }): Promise<import("next").Metadata> {
   const { id } = await params;
   const { title: titleParam } = await searchParams;
-  const anime = /^\\d+$/.test(id)
+  const anime = /^\d+$/.test(id)
     ? await getAniListAnime(id)
     : titleParam
       ? await getAniListAnimeByTitle(titleParam)
