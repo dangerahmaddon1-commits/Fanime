@@ -45,6 +45,7 @@ export interface ProviderDetails {
   year?: string;
   seasons: number[];
   episodes: ProviderEpisode[];
+  postId?: string;
 }
 export interface ProviderSource {
   id: string;
