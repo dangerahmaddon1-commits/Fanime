@@ -2,7 +2,7 @@ name: F Anime checks
 
 on:
   pull_request:
-    branches: [main]
+    branches: [main, seo/technical-metadata]
   push:
     branches: [main, feat/orange-multilingual-discovery, seo/technical-metadata, deployment/vercel]
 
