@@ -19,6 +19,21 @@ type AniListAnime = {
   genres?: string[];
 };
 
+async function getAniListAnimeByTitle(title: string): Promise<AniListAnime | null> {
+  if (!title.trim()) return null;
+  const response = await fetch("https://graphql.anilist.co", {
+    method: "POST", headers: { "Content-Type": "application/json", Accept: "application/json" },
+    body: JSON.stringify({
+      query: `query ($search: String!) { Page(page: 1, perPage: 1) { media(search: $search, type: ANIME, isAdult: false, sort: [SEARCH_MATCH]) { id title { romaji english native } coverImage { large } bannerImage description(asHtml: false) episodes seasonYear format status averageScore genres } } }`,
+      variables: { search: title },
+    }),
+    next: { revalidate: 3600 },
+  });
+  if (!response.ok) return null;
+  const json = await response.json();
+  return json.data?.Page?.media?.[0] ?? null;
+}
+
 async function getAniListAnime(id: string): Promise<AniListAnime | null> {
   if (!/^\d+$/.test(id)) return null;
   const response = await fetch("https://graphql.anilist.co", {
@@ -36,10 +51,10 @@ async function getAniListAnime(id: string): Promise<AniListAnime | null> {
 
 export default async function AnimeDetailPage({ params, searchParams }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ season?: string }>;
+  searchParams: Promise<{ season?: string; title?: string }>;
 }) {
   const { id } = await params;
-  const { season: seasonParam } = await searchParams;
+  const { season: seasonParam, title: titleParam } = await searchParams;
   const baseUrl = process.env.RENIME_API_BASE_URL?.trim();
   let providerDetails: ProviderDetails | null = null;
   let detailProvider: RenimeApiProvider | null = null;
@@ -89,8 +104,9 @@ export default async function AnimeDetailPage({ params, searchParams }: {
     }
   }
 
-  const aniList = providerDetails ? null : await getAniListAnime(id);
-  if (!providerDetails && !aniList) notFound();
+  let aniList = providerDetails ? null : await getAniListAnime(id);
+  if (!providerDetails && !aniList && titleParam) aniList = await getAniListAnimeByTitle(titleParam);
+  if (!providerDetails && !aniList) return <main className="min-h-screen bg-[#101010] px-5 py-20 text-center"><p className="text-xs font-bold tracking-[.25em] text-[var(--accent)]">F ANIME</p><h1 className="mt-4 text-3xl font-black">Anime details unavailable</h1><p className="mx-auto mt-3 max-w-lg text-sm leading-7 text-neutral-400">The selected provider could not return details for this title, and general catalog metadata was not found. You can still search for another title.</p><Link href="/search" className="mt-7 inline-block rounded-lg bg-[var(--accent)] px-5 py-3 text-sm font-bold text-black">Back to search</Link></main>;
   let anivexaEpisodes: ProviderEpisode[] = [];
   const anivexaBaseUrl = process.env.ANIVEXA_API_BASE_URL?.trim();
   if (anivexaBaseUrl && /^\d+$/.test(id)) {
