@@ -34,6 +34,5 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  const analyticsToken = process.env.NEXT_PUBLIC_CF_ANALYTICS_TOKEN;
-  return <html lang="en"><body>{children}<FirebaseAnalytics />{analyticsToken ? <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon={JSON.stringify({ token: analyticsToken })} /> : null}</body></html>;
+  return <html lang="en"><body>{children}<FirebaseAnalytics /></body></html>;
 }
