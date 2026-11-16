@@ -47,3 +47,17 @@ Import this existing GitHub repository into Vercel and select the Next.js framew
 
 ## Not connected yet
 Authentication, user profiles, watch history, Neon database, Monetag, ad-block messaging, automatic daily provider health checks, full watch-page utilities, user watch history, and production playback verification are not implemented yet. No deployment has been performed.
+
+
+## Firebase Authentication
+
+The app includes email/password registration and sign-in, Google sign-in, password reset, and sign-out through Firebase Authentication. Configure the Firebase project before testing these flows:
+
+1. In Firebase Console, open **Authentication → Sign-in method**.
+2. Enable **Email/Password** and **Google**.
+3. Under **Authentication → Settings → Authorized domains**, add your Vercel production domain and the preview domains you intend to test.
+4. In Vercel Project Settings → Environment Variables, set the `NEXT_PUBLIC_FIREBASE_*` values from the Firebase web app configuration for Preview and Production, then redeploy after approval.
+
+The Firebase web config is public client configuration, not a server secret. Never put service-account keys or private credentials in `NEXT_PUBLIC_*` variables.
+
+If sign-in reports `auth/operation-not-allowed`, enable the requested provider in Firebase Console. If it reports `auth/unauthorized-domain`, add the current host to Firebase's authorized domains.

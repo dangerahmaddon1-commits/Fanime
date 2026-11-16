@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import FirebaseAnalytics from "@/components/firebase-analytics";
+import { AuthProvider } from "@/components/auth-provider";
+import AuthControl from "@/components/auth-control";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim();
 
@@ -34,5 +36,5 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en"><body>{children}<FirebaseAnalytics /></body></html>;
+  return <html lang="en"><body><AuthProvider>{children}<div className="fixed bottom-4 right-4 z-50 max-w-[calc(100vw-2rem)]"><AuthControl /></div></AuthProvider><FirebaseAnalytics /></body></html>;
 }
