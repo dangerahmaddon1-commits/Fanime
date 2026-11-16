@@ -55,14 +55,15 @@ export async function generateMetadata({ params, searchParams }: {
 }): Promise<import("next").Metadata> {
   const { id } = await params;
   const { title: titleParam } = await searchParams;
+  const jikan = id.startsWith("mal-") ? await getJikanAnime(id.slice(4)) : null;
   const anime = /^\d+$/.test(id)
     ? await getAniListAnime(id)
-    : titleParam
+    : titleParam && !jikan
       ? await getAniListAnimeByTitle(titleParam)
       : null;
   const title = anime?.title.english || anime?.title.romaji || anime?.title.native || (jikan ? jikanTitle(jikan) : null) || titleParam?.trim() || "Anime details";
   const description = anime?.description?.replace(/<[^>]*>/g, "").slice(0, 300) || jikan?.synopsis?.slice(0, 300)
-    || `Explore ${title} on F Anime, including available episodes, language options and providers.`;
+    || \`Explore \${title} on F Anime, including available episodes, language options and providers.\`;
   const image = anime?.coverImage.large || (jikan ? jikanImage(jikan) : undefined);
 
   return {
