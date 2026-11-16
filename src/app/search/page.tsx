@@ -7,6 +7,7 @@ export const metadata: Metadata = {
 };
 import type { Metadata } from "next";
 import { getRenimeProviderOrder } from "@/lib/providers/provider-order";
+import { searchJikanAnime, jikanImage, jikanTitle } from "@/lib/jikan";
 
 type AniListAnime = {
   id: number;
@@ -59,19 +60,40 @@ async function searchAnime(filters: Filters): Promise<{ items: SearchItem[]; sou
     }),
     next: { revalidate: 300 },
   });
-  if (!response.ok) throw new Error("Anime catalog is temporarily unavailable.");
-  const json = await response.json();
-  const items: AniListAnime[] = json.data?.Page?.media ?? [];
-  return {
-    source: "AniList",
-    notice: baseUrl && filters.q && !hasFilters ? "The selected provider could not be reached, so these results are from the general anime catalog." : undefined,
-    items: items.map((anime) => ({
-      id: String(anime.id),
-      title: anime.title.english || anime.title.romaji || anime.title.native || "Untitled anime",
-      image: anime.coverImage.large,
-      meta: [anime.seasonYear, anime.format, anime.episodes ? `${anime.episodes} eps` : null].filter(Boolean).join(" · "),
-    })),
-  };
+  try {
+    if (!response.ok) throw new Error(`AniList returned HTTP ${response.status}`);
+    const json = await response.json();
+    const items: AniListAnime[] = json.data?.Page?.media ?? [];
+    if (items.length || !filters.q || hasFilters) {
+      return {
+        source: "AniList",
+        notice: baseUrl && filters.q && !hasFilters ? "The selected provider could not be reached, so these results are from the general catalog." : undefined,
+        items: items.map((anime) => ({
+          id: String(anime.id),
+          title: anime.title.english || anime.title.romaji || anime.title.native || "Untitled anime",
+          image: anime.coverImage.large,
+          meta: [anime.seasonYear, anime.format, anime.episodes ? `${anime.episodes} eps` : null].filter(Boolean).join(" · "),
+        })),
+      };
+    }
+  } catch {
+    // Jikan provides a second, keyless metadata catalog if AniList is unavailable.
+  }
+
+  if (filters.q && !hasFilters) {
+    const fallback = await searchJikanAnime(filters.q, 24);
+    return {
+      source: "Jikan · MyAnimeList",
+      notice: "These catalogue results use MyAnimeList IDs. Episode availability depends on a separate compatible playback provider.",
+      items: fallback.map((anime) => ({
+        id: `mal-${anime.mal_id}`,
+        title: jikanTitle(anime),
+        image: jikanImage(anime),
+        meta: [anime.year, anime.type, anime.episodes ? `${anime.episodes} eps` : null].filter(Boolean).join(" · "),
+      })),
+    };
+  }
+  throw new Error("Anime catalog is temporarily unavailable.");
 }
 
 export default async function SearchPage({ searchParams }: { searchParams: Promise<{ q?: string; genre?: string; year?: string; season?: string; format?: string; status?: string; sort?: string }> }) {
