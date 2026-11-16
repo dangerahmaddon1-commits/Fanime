@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getRenimeProviderOrder } from "@/lib/providers/provider-order";
+import type { RenimeApiProvider } from "@/lib/providers/renime-api";
 import type { ProviderDetails, ProviderEpisode } from "@/lib/providers/types";
 import { AnivexaApiProvider } from "@/lib/providers/anivexa-api";
 
@@ -41,30 +42,38 @@ export default async function AnimeDetailPage({ params, searchParams }: {
   const { season: seasonParam } = await searchParams;
   const baseUrl = process.env.RENIME_API_BASE_URL?.trim();
   let providerDetails: ProviderDetails | null = null;
+  let detailProvider: RenimeApiProvider | null = null;
   let providerError = false;
   let selectedSeason = Math.max(1, Number(seasonParam) || 1);
   let episodeList: ProviderEpisode[] = [];
 
   if (baseUrl) {
     try {
+      let detailsSucceeded = false;
       for (const provider of getRenimeProviderOrder(baseUrl)) {
         try {
           const candidate = await provider.details(id);
+          detailsSucceeded = true;
           if (!providerDetails || candidate.episodes.length > providerDetails.episodes.length) {
             providerDetails = candidate;
+            detailProvider = provider;
           }
           if (candidate.episodes.length) break;
         } catch {
           // Try the alternate catalog before falling back to AniList.
         }
       }
+      providerError = !detailsSucceeded;
       if (providerDetails) {
         if (providerDetails.seasons.length && !providerDetails.seasons.includes(selectedSeason)) {
           selectedSeason = providerDetails.seasons[0];
         }
         episodeList = providerDetails.episodes;
         if (seasonParam && selectedSeason !== 1) {
-          for (const provider of getRenimeProviderOrder(baseUrl)) {
+          const orderedProviders = detailProvider
+            ? [detailProvider, ...getRenimeProviderOrder(baseUrl).filter((provider) => provider.id !== detailProvider?.id)]
+            : getRenimeProviderOrder(baseUrl);
+          for (const provider of orderedProviders) {
             try {
               const candidateEpisodes = await provider.episodes({ animeId: id, season: selectedSeason });
               if (candidateEpisodes.length) { episodeList = candidateEpisodes; break; }
