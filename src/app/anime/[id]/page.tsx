@@ -48,6 +48,41 @@ async function getAniListAnime(id: string): Promise<AniListAnime | null> {
   return json.data?.Media ?? null;
 }
 
+export async function generateMetadata({ params, searchParams }: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ title?: string }>;
+}): Promise<import("next").Metadata> {
+  const { id } = await params;
+  const { title: titleParam } = await searchParams;
+  const anime = /^\\d+$/.test(id)
+    ? await getAniListAnime(id)
+    : titleParam
+      ? await getAniListAnimeByTitle(titleParam)
+      : null;
+  const title = anime?.title.english || anime?.title.romaji || anime?.title.native || titleParam?.trim() || "Anime details";
+  const description = anime?.description?.replace(/<[^>]*>/g, "").slice(0, 300)
+    || `Explore ${title} on F Anime, including available episodes, language options and providers.`;
+  const image = anime?.coverImage.large;
+
+  return {
+    title,
+    description,
+    alternates: { canonical: `/anime/${encodeURIComponent(id)}` },
+    openGraph: {
+      type: "article",
+      title: `${title} | F Anime`,
+      description,
+      ...(image ? { images: [{ url: image, alt: title }] } : {}),
+    },
+    twitter: {
+      card: image ? "summary_large_image" : "summary",
+      title: `${title} | F Anime`,
+      description,
+      ...(image ? { images: [image] } : {}),
+    },
+  };
+}
+
 export default async function AnimeDetailPage({ params, searchParams }: {
   params: Promise<{ id: string }>;
   searchParams: Promise<{ season?: string; title?: string }>;
