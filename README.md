@@ -8,6 +8,7 @@ F Anime is an orange-accented anime discovery experience built with Next.js 15, 
 - Cloudflare Workers + `@opennextjs/cloudflare`
 - AniList GraphQL for general anime metadata and airing schedules
 - Optional Renime API adapter for AnimeSalt and WatchAnimeWorld catalogs, episode details and provider-supplied embeds
+- Optional Anivexa adapter for multi-provider SUB/DUB episode availability and watch-source lookup
 - Neon Postgres + Drizzle and account features are planned, not yet connected
 
 ## Local setup
