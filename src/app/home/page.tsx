@@ -102,7 +102,7 @@ export default async function HomePage() {
               <p className="text-[10px] font-bold tracking-[.3em] text-[var(--accent)]">FEATURED · F ANIME</p>
               <h1 className="mt-4 text-4xl font-black leading-tight sm:text-6xl">{featured?.title || "Discover your next anime"}</h1>
               <p className="mt-4 max-w-xl text-sm leading-7 text-neutral-300">Explore the latest episodes, find your next series, and discover anime across the languages you enjoy.</p>
-              <div className="mt-7 flex flex-wrap gap-3"><Link href={featured ? `/anime/${featured.id}` : "/search"} className="rounded-lg bg-[var(--accent)] px-5 py-3 text-sm font-bold text-black transition hover:brightness-110">Explore title →</Link><Link href="/schedule" className="rounded-lg border border-white/20 bg-black/20 px-5 py-3 text-sm font-semibold text-white hover:border-white/40">View schedule</Link></div>
+              <div className="mt-7 flex flex-wrap gap-3"><Link href={featured ? `/anime/${encodeURIComponent(featured.id)}?title=${encodeURIComponent(featured.title)}` : "/search"} className="rounded-lg bg-[var(--accent)] px-5 py-3 text-sm font-bold text-black transition hover:brightness-110">Explore title →</Link><Link href="/schedule" className="rounded-lg border border-white/20 bg-black/20 px-5 py-3 text-sm font-semibold text-white hover:border-white/40">View schedule</Link></div>
             </div>
             <div className="absolute bottom-5 right-6 hidden gap-2 sm:flex"><span className="h-1.5 w-7 rounded-full bg-[var(--accent)]" /><span className="h-1.5 w-3 rounded-full bg-white/40" /><span className="h-1.5 w-3 rounded-full bg-white/40" /></div>
           </section>
