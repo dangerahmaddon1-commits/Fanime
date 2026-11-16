@@ -3,13 +3,13 @@
 import { useEffect, useRef } from "react";
 import Hls from "hls.js";
 
-export default function HlsPlayer({ src }: { src: string }) {
+export default function HlsPlayer({ src, type = "hls" }: { src: string; type?: "hls" | "mp4" }) {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
-    if (video.canPlayType("application/vnd.apple.mpegurl")) {
+    if (type === "mp4" || video.canPlayType("application/vnd.apple.mpegurl")) {
       video.src = src;
       return;
     }
@@ -21,7 +21,7 @@ export default function HlsPlayer({ src }: { src: string }) {
     hls.loadSource(src);
     hls.attachMedia(video);
     return () => hls.destroy();
-  }, [src]);
+  }, [src, type]);
 
   return <video ref={videoRef} controls playsInline preload="metadata" className="h-full w-full bg-black" />;
 }
