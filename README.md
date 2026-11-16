@@ -29,7 +29,7 @@ The previously tested `renime.top` API routes returned HTTP 404. The built-in di
 
 ## Firebase analytics
 
-Set the `NEXT_PUBLIC_FIREBASE_*` values from your Firebase web app configuration in `.env.local` and in the Cloudflare Worker environment. The Firebase config values are browser-visible identifiers, not server secrets; secure Firebase services with Firebase Security Rules. Firebase Analytics initializes only in supported browsers and is optional, so it will not block rendering. Authentication is not wired up yet.
+The Firebase web app configuration supplied for project `fanime-c94fe` is wired into the client initializer. Optional `NEXT_PUBLIC_FIREBASE_*` variables can override those defaults in local or Cloudflare environments. These configuration values are browser-visible identifiers, not server secrets; secure Firebase services with Firebase Security Rules. Firebase Analytics initializes only in supported browsers and is optional, so it will not block rendering. Authentication is not wired up yet.
 
 ## Cloudflare
 Run `npx opennextjs-cloudflare build` to build the Worker. `npm run build` runs the underlying Next.js build; `npm run preview` builds the Worker and starts the local Workers preview. Deploy with `npm run deploy` only after the account, bindings and environment variables have been configured and reviewed. This project uses Cloudflare Workers, not Vercel or static Pages export.
