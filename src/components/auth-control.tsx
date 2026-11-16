@@ -1,12 +1,15 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { signOut } from "firebase/auth";
 import { useAuth } from "@/components/auth-provider";
 import { getFirebaseAuth } from "@/lib/firebase/client";
 
 export default function AuthControl() {
   const { user, loading } = useAuth();
+  const pathname = usePathname();
+  if (pathname === "/login") return null;
   if (loading) return <div aria-hidden="true" className="h-9 w-20 animate-pulse rounded-full bg-white/10" />;
   if (!user) return <Link href="/login" className="inline-flex min-h-10 items-center justify-center rounded-full bg-[var(--accent)] px-4 py-2 text-sm font-bold text-black shadow-lg shadow-black/20 transition hover:brightness-110">Sign in</Link>;
 
