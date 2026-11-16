@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { RenimeApiProvider } from "@/lib/providers/renime-api";
+import { getRenimeProviderOrder } from "@/lib/providers/provider-order";
 
 type AniListAnime = {
   id: number;
@@ -18,13 +18,18 @@ async function searchAnime(query: string): Promise<{ items: SearchItem[]; source
 
   if (query && baseUrl) {
     try {
-      const provider = new RenimeApiProvider(baseUrl, providerKey);
-      const results = await provider.search({ query });
-      if (results.length) {
-        return {
-          source: providerKey === "animesalt" ? "AnimeSalt" : "WatchAnimeWorld",
-          items: results.map((item) => ({ id: item.id, title: item.title, image: item.image, type: item.type })),
-        };
+      for (const provider of getRenimeProviderOrder(baseUrl)) {
+        try {
+          const results = await provider.search({ query });
+          if (results.length) {
+            return {
+              source: provider.id === "renime-animesalt" ? "AnimeSalt" : "WatchAnimeWorld",
+              items: results.map((item) => ({ id: item.id, title: item.title, image: item.image, type: item.type })),
+            };
+          }
+        } catch {
+          // Try the next configured upstream provider.
+        }
       }
     } catch {
       // Keep discovery usable when the optional third-party API is offline.
