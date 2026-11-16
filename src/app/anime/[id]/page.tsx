@@ -39,7 +39,7 @@ async function getAniListAnimeByMalId(malId: string): Promise<AniListAnime | nul
   const response = await fetch("https://graphql.anilist.co", {
     method: "POST", headers: { "Content-Type": "application/json", Accept: "application/json" },
     body: JSON.stringify({
-      query: \`query ($idMal: Int!) { Media(idMal: $idMal, type: ANIME) { id title { romaji english native } coverImage { large } bannerImage description(asHtml: false) episodes seasonYear format status averageScore genres } }\`,
+      query: `query ($idMal: Int!) { Media(idMal: $idMal, type: ANIME) { id title { romaji english native } coverImage { large } bannerImage description(asHtml: false) episodes seasonYear format status averageScore genres } }`,
       variables: { idMal: Number(malId) },
     }),
     next: { revalidate: 3600 },
@@ -78,7 +78,7 @@ export async function generateMetadata({ params, searchParams }: {
       : null;
   const title = anime?.title.english || anime?.title.romaji || anime?.title.native || (jikan ? jikanTitle(jikan) : null) || titleParam?.trim() || "Anime details";
   const description = anime?.description?.replace(/<[^>]*>/g, "").slice(0, 300) || jikan?.synopsis?.slice(0, 300)
-    || \`Explore \${title} on F Anime, including available episodes, language options and providers.\`;
+    || `Explore ${title} on F Anime, including available episodes, language options and providers.`;
   const image = anime?.coverImage.large || (jikan ? jikanImage(jikan) : undefined);
 
   return {
