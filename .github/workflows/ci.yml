@@ -2,9 +2,9 @@ name: F Anime checks
 
 on:
   pull_request:
-    branches: [main]
+    branches: [main, seo/technical-metadata]
   push:
-    branches: [main, feat/orange-multilingual-discovery]
+    branches: [main, feat/orange-multilingual-discovery, seo/technical-metadata, deployment/vercel]
 
 permissions:
   contents: read
@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   validate:
-    name: Install, lint, typecheck and Cloudflare build
+    name: Install, lint, typecheck and Next.js build
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -25,35 +25,38 @@ jobs:
         uses: actions/setup-node@v5
         with:
           node-version: 22
+          cache: npm
       - name: Install dependencies
         run: npm install --no-audit --no-fund
       - name: Lint
         run: npm run lint
       - name: Type check
         run: npm run typecheck
-      - name: Build for Cloudflare
-        run: npx opennextjs-cloudflare build
-      - name: Smoke-test Worker routes locally
+      - name: Build Next.js for Vercel
+        run: npm run build
+      - name: Smoke-test Next.js routes locally
         shell: bash
         run: |
-          npx wrangler dev --local --port 8787 > /tmp/fanime-wrangler.log 2>&1 &
-          WRANGLER_PID=$!
-          trap 'kill "$WRANGLER_PID" 2>/dev/null || true' EXIT
+          npm run start > /tmp/fanime-next.log 2>&1 &
+          NEXT_PID=$!
+          trap 'kill "$NEXT_PID" 2>/dev/null || true' EXIT
           for attempt in $(seq 1 30); do
-            if curl --silent --show-error --fail --max-time 10 http://127.0.0.1:8787/ -o /tmp/fanime-landing.html; then
+            if curl --silent --show-error --fail --max-time 10 http://127.0.0.1:3000/ -o /tmp/fanime-landing.html; then
               break
             fi
             sleep 2
           done
           if [ ! -s /tmp/fanime-landing.html ]; then
-            cat /tmp/fanime-wrangler.log
+            cat /tmp/fanime-next.log
             exit 1
           fi
           grep -q "F ANIME" /tmp/fanime-landing.html
-          curl --silent --show-error --fail --max-time 30 http://127.0.0.1:8787/home -o /tmp/fanime-home.html
-          curl --silent --show-error --fail --max-time 30 http://127.0.0.1:8787/search -o /tmp/fanime-search.html
-          curl --silent --show-error --fail --max-time 30 http://127.0.0.1:8787/schedule -o /tmp/fanime-schedule.html
-          curl --silent --show-error --fail --max-time 40 "http://127.0.0.1:8787/search?q=Naruto" -o /tmp/fanime-provider-search.html
-          curl --silent --show-error --fail --max-time 40 "http://127.0.0.1:8787/anime/naruto?title=Naruto" -o /tmp/fanime-provider-detail.html
-          curl --silent --show-error --fail --max-time 40 http://127.0.0.1:8787/watch/naruto/naruto-1x1 -o /tmp/fanime-provider-watch.html
-          curl --silent --show-error --fail --max-time 10 http://127.0.0.1:8787/watch/anivexa/1/sub/1 -o /tmp/fanime-watch.html
+          curl --silent --show-error --fail --max-time 30 http://127.0.0.1:3000/home -o /tmp/fanime-home.html
+          curl --silent --show-error --fail --max-time 30 http://127.0.0.1:3000/search -o /tmp/fanime-search.html
+          curl --silent --show-error --fail --max-time 30 http://127.0.0.1:3000/schedule -o /tmp/fanime-schedule.html
+          curl --silent --show-error --fail --max-time 40 "http://127.0.0.1:3000/search?q=Naruto" -o /tmp/fanime-provider-search.html
+          curl --silent --show-error --fail --max-time 40 "http://127.0.0.1:3000/anime/naruto?title=Naruto" -o /tmp/fanime-provider-detail.html
+          curl --silent --show-error --fail --max-time 40 http://127.0.0.1:3000/watch/naruto/naruto-1x1 -o /tmp/fanime-provider-watch.html
+          curl --silent --show-error --fail --max-time 10 http://127.0.0.1:3000/watch/anivexa/1/sub/1 -o /tmp/fanime-watch.html
+          curl --silent --show-error --fail --max-time 10 http://127.0.0.1:3000/robots.txt -o /tmp/fanime-robots.txt
+          curl --silent --show-error --fail --max-time 10 http://127.0.0.1:3000/sitemap.xml -o /tmp/fanime-sitemap.xml
