@@ -12,7 +12,7 @@ export default async function AnivexaWatchPage({ params, searchParams }: {
   const audio = rawAudio === "dub" ? "dub" : "sub";
   const episode = Number(rawEpisode);
   const baseUrl = process.env.ANIVEXA_API_BASE_URL?.trim();
-  let sources: ProviderSource[] = [];
+  const sources: ProviderSource[] = [];
   let attempted = 0;
   let episodeNumbers: number[] = [];
   let availableAudios: string[] = [];
