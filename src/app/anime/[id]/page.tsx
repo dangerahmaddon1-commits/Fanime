@@ -110,7 +110,7 @@ export default async function AnimeDetailPage({ params, searchParams }: {
   return <main className="min-h-screen">
     <div className="relative min-h-72 border-b border-white/10 bg-[#181818]">
       {background && <div className="absolute inset-0 bg-cover bg-center opacity-25" style={{ backgroundImage: `linear-gradient(to bottom,rgba(16,16,16,.25),#101010),url(${background})` }} />}
-      <header className="relative mx-auto flex max-w-7xl items-center justify-between px-5 py-5"><Link href="/" className="text-xl font-black tracking-tight">F <span className="text-[var(--accent)]">ANIME</span></Link><nav className="flex gap-5 text-sm"><Link href="/search">Discover</Link><Link href="/schedule">Schedule</Link></nav></header>
+      <header className="relative mx-auto flex max-w-7xl items-center justify-between px-5 py-5"><Link href="/home" className="text-xl font-black tracking-tight">F <span className="text-[var(--accent)]">ANIME</span></Link><nav className="flex gap-5 text-sm"><Link href="/search">Discover</Link><Link href="/schedule">Schedule</Link></nav></header>
       <div className="relative mx-auto flex max-w-7xl items-end gap-7 px-5 pb-10 pt-10">{image && <img src={image} alt="" className="hidden w-40 rounded-xl shadow-2xl sm:block" />}<div><p className="text-xs font-bold tracking-[.25em] text-[var(--accent)]">ANIME DETAILS</p><h1 className="mt-3 text-3xl font-black sm:text-5xl">{title}</h1><p className="mt-3 text-sm text-neutral-400">{metadata}</p><div className="mt-4 flex flex-wrap gap-2">{genres.map((genre) => <span key={genre} className="rounded-full border border-white/15 px-3 py-1 text-xs text-neutral-300">{genre}</span>)}</div></div></div>
     </div>
     <section className="mx-auto max-w-7xl px-5 py-10">
