@@ -1,5 +1,12 @@
 import Link from "next/link";
 
+export const metadata: Metadata = {
+  title: "Watch Anime Online",
+  description: "Discover anime, explore popular series and find new episodes across multiple languages.",
+  alternates: { canonical: "/" },
+};
+import type { Metadata } from "next";
+
 const suggestions = ["One Piece", "Naruto", "Demon Slayer", "Jujutsu Kaisen", "Solo Leveling"];
 
 export default function LandingPage() {
