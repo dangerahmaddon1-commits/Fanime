@@ -18,7 +18,9 @@ F Anime is an orange-accented anime discovery experience built with Next.js 15, 
 4. Run `npm run dev`.
 
 ## Optional Renime API
-Set `RENIME_API_BASE_URL` to the base URL of a running Renime API instance (for example, the URL of your own deployment, without `/api` at the end). Set `RENIME_DEFAULT_PROVIDER` to `animesalt` or `watchanimeworld`.
+Set `RENIME_API_BASE_URL` to the base URL of a running Renime API instance (without `/api` at the end). Set `RENIME_DEFAULT_PROVIDER` to `animesalt` or `watchanimeworld`.
+
+Set `ANIVEXA_API_BASE_URL` to a running Anivexa API instance (without a trailing slash) to enable its aggregated provider episode lists and SUB/DUB watch-source lookup. Anivexa's supplied repository is a self-hosted Node.js API; it does not publish a verified public API base URL. Its dependencies and provider integrations have not yet been validated on Cloudflare Workers, so do not assume the API itself can be deployed there unchanged.
 
 When the Renime API is configured, F Anime tries it for provider search, title details, episodes and embed server lists. If provider search is unavailable, search falls back to AniList. General anime details and the weekly airing schedule use AniList.
 
@@ -30,9 +32,9 @@ Run `npm run build` to build the OpenNext Worker and `npm run preview` to previe
 ## Current implementation
 - Orange F Anime branding and responsive homepage
 - Anime search with AniList fallback and optional Renime provider search
-- Anime detail pages, including provider episode lists when Renime is configured
-- Weekly airing schedule displayed in Pakistan time
-- Watch page with provider-returned HTTPS iframe servers when Renime is configured
+- Anime detail pages with Renime season/episode data and deduplicated Anivexa multi-provider SUB/DUB episode availability when configured
+- Weekly airing schedule with a date strip, displayed in Pakistan time
+- Watch pages with provider fallback, HTTPS iframe embeds and HLS.js playback when Anivexa is configured
 
 ## Not connected yet
-Authentication, user profiles, watch history, Neon database, Monetag, ad-block messaging, automatic provider health checks/failover, and production playback verification are not implemented yet. No deployment has been performed.
+Authentication, user profiles, watch history, Neon database, Monetag, ad-block messaging, automatic daily provider health checks, full watch-page utilities, user watch history, and production playback verification are not implemented yet. No deployment has been performed.
