@@ -1,0 +1,6 @@
+name = "fanime-media-proxy"
+main = "src/index.ts"
+compatibility_date = "2026-11-16"
+
+[vars]
+# Configure PROVIDERS_JSON as a secret/variable. Only add hosts you are authorized to proxy.
