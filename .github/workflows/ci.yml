@@ -32,4 +32,4 @@ jobs:
       - name: Type check
         run: npm run typecheck
       - name: Build for Cloudflare
-        run: npm run build
+        run: npx opennextjs-cloudflare build
