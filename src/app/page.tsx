@@ -1,7 +1,9 @@
 import Link from "next/link";
+import { getRenimeProviderOrder } from "@/lib/providers/provider-order";
+import type { ProviderAnime, ProviderHome } from "@/lib/providers/types";
 
 const languageOptions = ["Japanese", "English", "Hindi", "Tamil", "Telugu", "Korean", "Chinese"];
-
+type CatalogCard = { id: string; title: string; image?: string; meta?: string };
 type TrendingAnime = {
   id: number;
   title: { romaji?: string; english?: string };
@@ -9,7 +11,21 @@ type TrendingAnime = {
   averageScore?: number;
 };
 
-async function getTrending(): Promise<TrendingAnime[]> {
+async function getProviderHome(): Promise<ProviderHome | null> {
+  const baseUrl = process.env.RENIME_API_BASE_URL?.trim();
+  if (!baseUrl) return null;
+  for (const provider of getRenimeProviderOrder(baseUrl)) {
+    try {
+      const data = await provider.home();
+      if (data.newestDrops.length || data.newAnimeArrivals.length || data.mostWatchedShows.length) return data;
+    } catch {
+      // Try the alternate catalog.
+    }
+  }
+  return null;
+}
+
+async function getTrending(): Promise<CatalogCard[]> {
   try {
     const response = await fetch("https://graphql.anilist.co", {
       method: "POST",
@@ -21,7 +37,13 @@ async function getTrending(): Promise<TrendingAnime[]> {
     });
     if (!response.ok) return [];
     const json = await response.json();
-    return json.data?.Page?.media ?? [];
+    const items: TrendingAnime[] = json.data?.Page?.media ?? [];
+    return items.map((anime) => ({
+      id: String(anime.id),
+      title: anime.title.english || anime.title.romaji || "Anime",
+      image: anime.coverImage.large,
+      meta: anime.averageScore ? `★ ${anime.averageScore}%` : "Trending",
+    }));
   } catch {
     return [];
   }
@@ -33,8 +55,26 @@ const discoveryCards = [
   { title: "Explore by language", detail: "Find titles across the languages you enjoy.", tag: "MORE WAYS TO WATCH", href: "/search" },
 ];
 
+function CatalogSection({ title, eyebrow, items }: { title: string; eyebrow: string; items: CatalogCard[] }) {
+  if (!items.length) return null;
+  return <section className="mx-auto max-w-7xl px-5 py-12">
+    <div className="mb-7"><p className="text-xs font-bold tracking-[.25em] text-[var(--accent)]">{eyebrow}</p><h2 className="mt-2 text-3xl font-bold">{title}</h2></div>
+    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">{items.slice(0, 12).map((anime) => <Link key={anime.id} href={`/anime/${encodeURIComponent(anime.id)}`} className="group overflow-hidden rounded-xl border border-white/10 bg-[#1b1b1b] transition hover:-translate-y-1 hover:border-[var(--accent)]/50"><div className="aspect-[3/4] overflow-hidden bg-[#252525]">{anime.image ? <img src={anime.image} alt="" className="h-full w-full object-cover transition duration-300 group-hover:scale-105" loading="lazy" /> : <div className="flex h-full items-center justify-center text-sm text-neutral-600">F Anime</div>}</div><div className="p-3"><h3 className="line-clamp-2 text-sm font-bold">{anime.title}</h3>{anime.meta && <p className="mt-2 text-xs text-neutral-500">{anime.meta}</p>}</div></Link>)}</div>
+  </section>;
+}
+
+function mapProviderItems(items: ProviderAnime[]): CatalogCard[] {
+  return items.map((item) => ({ id: item.id, title: item.title, image: item.image }));
+}
+
 export default async function HomePage() {
-  const trending = await getTrending();
+  const providerHome = await getProviderHome();
+  const fallbackTrending = providerHome?.mostWatchedShows.length ? [] : await getTrending();
+  const newestDrops = mapProviderItems(providerHome?.newestDrops ?? []);
+  const newArrivals = mapProviderItems(providerHome?.newAnimeArrivals ?? []);
+  const popular = providerHome?.mostWatchedShows.length ? mapProviderItems(providerHome.mostWatchedShows) : fallbackTrending;
+  const animeMovies = mapProviderItems(providerHome?.animeMovies ?? []);
+
   return (
     <main className="min-h-screen overflow-hidden">
       <header className="sticky top-0 z-20 border-b border-white/10 bg-[#101010]/85 backdrop-blur-xl">
@@ -67,11 +107,11 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
-      {trending.length > 0 && <section className="mx-auto max-w-7xl px-5 py-16">
-        <div className="mb-7 flex items-end justify-between gap-4"><div><p className="text-xs font-bold tracking-[.25em] text-[var(--accent)]">POPULAR RIGHT NOW</p><h2 className="mt-2 text-3xl font-bold">Trending anime</h2></div><Link href="/search" className="text-sm font-semibold text-[var(--accent)]">View all →</Link></div>
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">{trending.map((anime) => <Link key={anime.id} href={`/anime/${anime.id}`} className="group overflow-hidden rounded-xl border border-white/10 bg-[#1b1b1b] transition hover:-translate-y-1 hover:border-[var(--accent)]/50"><div className="aspect-[3/4] overflow-hidden"><img src={anime.coverImage.large} alt="" className="h-full w-full object-cover transition duration-300 group-hover:scale-105" loading="lazy" /></div><div className="p-3"><h3 className="line-clamp-2 text-sm font-bold">{anime.title.english || anime.title.romaji}</h3>{anime.averageScore ? <p className="mt-2 text-xs text-[var(--accent)]">★ {anime.averageScore}%</p> : null}</div></Link>)}</div>
-      </section>}
-      <section className="mx-auto max-w-7xl px-5 py-16">
+      <CatalogSection eyebrow="LATEST EPISODES" title="Newest drops" items={newestDrops} />
+      <CatalogSection eyebrow="JUST ADDED" title="New anime arrivals" items={newArrivals} />
+      <CatalogSection eyebrow="POPULAR RIGHT NOW" title="Most watched" items={popular} />
+      <CatalogSection eyebrow="FEATURED FILMS" title="Anime movies" items={animeMovies} />
+      <section className="mx-auto max-w-7xl px-5 py-12">
         <div className="mb-8"><p className="text-xs font-bold tracking-[.25em] text-[var(--accent)]">START EXPLORING</p><h2 className="mt-2 text-3xl font-bold">Discover F Anime</h2></div>
         <div className="grid gap-4 md:grid-cols-3">{discoveryCards.map((item) => <Link key={item.tag} href={item.href} className="group rounded-2xl border border-white/10 bg-[#1b1b1b] p-6 transition hover:-translate-y-1 hover:border-[var(--accent)]/50"><p className="text-xs font-bold tracking-widest text-[var(--accent)]">{item.tag}</p><div className="mt-8 flex items-center justify-between"><h3 className="text-xl font-bold">{item.title}</h3><span className="text-xl text-neutral-500 transition group-hover:translate-x-1 group-hover:text-[var(--accent)]">↗</span></div><p className="mt-2 text-sm leading-6 text-neutral-400">{item.detail}</p></Link>)}</div>
       </section>
