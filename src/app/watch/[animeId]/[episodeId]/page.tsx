@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getRenimeProviderOrder } from "@/lib/providers/provider-order";
+import type { ProviderSource } from "@/lib/providers/types";
 
 export default async function WatchPage({ params, searchParams }: {
   params: Promise<{ animeId: string; episodeId: string }>;
@@ -8,7 +9,7 @@ export default async function WatchPage({ params, searchParams }: {
   const { animeId, episodeId } = await params;
   const { server = "0" } = await searchParams;
   const baseUrl = process.env.RENIME_API_BASE_URL?.trim();
-  let sources: Awaited<ReturnType<RenimeApiProvider["sources"]>> = [];
+  let sources: ProviderSource[] = [];
   let failed = false;
   if (baseUrl) {
     try {
