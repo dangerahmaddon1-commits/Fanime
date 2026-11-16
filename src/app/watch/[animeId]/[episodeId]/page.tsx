@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { RenimeApiProvider } from "@/lib/providers/renime-api";
+import { getRenimeProviderOrder } from "@/lib/providers/provider-order";
 
 export default async function WatchPage({ params, searchParams }: {
   params: Promise<{ animeId: string; episodeId: string }>;
@@ -8,12 +8,18 @@ export default async function WatchPage({ params, searchParams }: {
   const { animeId, episodeId } = await params;
   const { server = "0" } = await searchParams;
   const baseUrl = process.env.RENIME_API_BASE_URL?.trim();
-  const providerKey = process.env.RENIME_DEFAULT_PROVIDER === "watchanimeworld" ? "watchanimeworld" : "animesalt";
   let sources: Awaited<ReturnType<RenimeApiProvider["sources"]>> = [];
   let failed = false;
   if (baseUrl) {
     try {
-      sources = await new RenimeApiProvider(baseUrl, providerKey).sources({ episodeId });
+      for (const provider of getRenimeProviderOrder(baseUrl)) {
+        try {
+          const candidateSources = await provider.sources({ episodeId });
+          if (candidateSources.length) { sources = candidateSources; break; }
+        } catch {
+          // Try the alternate catalog if this provider has no source.
+        }
+      }
     } catch {
       failed = true;
     }
