@@ -84,7 +84,7 @@ export default async function AnimeDetailPage({ params, searchParams }: {
   if (!providerDetails && !aniList) notFound();
   let anivexaEpisodes: ProviderEpisode[] = [];
   const anivexaBaseUrl = process.env.ANIVEXA_API_BASE_URL?.trim();
-  if (anivexaBaseUrl && /^\\d+$/.test(id)) {
+  if (anivexaBaseUrl && /^\d+$/.test(id)) {
     try {
       anivexaEpisodes = await new AnivexaApiProvider(anivexaBaseUrl).episodes(id);
     } catch {
