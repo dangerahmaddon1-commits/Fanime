@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
 import { getRenimeProviderOrder } from "@/lib/providers/provider-order";
 import type { RenimeApiProvider } from "@/lib/providers/renime-api";
 import type { ProviderDetails, ProviderEpisode } from "@/lib/providers/types";
