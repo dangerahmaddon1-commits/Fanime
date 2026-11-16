@@ -3,6 +3,7 @@ import { getRenimeProviderOrder } from "@/lib/providers/provider-order";
 import type { AnimeProvider } from "@/lib/providers/types";
 import type { ProviderDetails, ProviderEpisode } from "@/lib/providers/types";
 import { AnivexaApiProvider } from "@/lib/providers/anivexa-api";
+import { getJikanAnime, jikanImage, jikanTitle } from "@/lib/jikan";
 
 type AniListAnime = {
   id: number;
@@ -59,10 +60,10 @@ export async function generateMetadata({ params, searchParams }: {
     : titleParam
       ? await getAniListAnimeByTitle(titleParam)
       : null;
-  const title = anime?.title.english || anime?.title.romaji || anime?.title.native || titleParam?.trim() || "Anime details";
-  const description = anime?.description?.replace(/<[^>]*>/g, "").slice(0, 300)
+  const title = anime?.title.english || anime?.title.romaji || anime?.title.native || (jikan ? jikanTitle(jikan) : null) || titleParam?.trim() || "Anime details";
+  const description = anime?.description?.replace(/<[^>]*>/g, "").slice(0, 300) || jikan?.synopsis?.slice(0, 300)
     || `Explore ${title} on F Anime, including available episodes, language options and providers.`;
-  const image = anime?.coverImage.large;
+  const image = anime?.coverImage.large || (jikan ? jikanImage(jikan) : undefined);
 
   return {
     title,
@@ -96,7 +97,7 @@ export default async function AnimeDetailPage({ params, searchParams }: {
   let selectedSeason = Math.max(1, Number(seasonParam) || 1);
   let episodeList: ProviderEpisode[] = [];
 
-  {
+  if (!id.startsWith("mal-")) {
     try {
       let detailsSucceeded = false;
       for (const provider of getRenimeProviderOrder(baseUrl)) {
@@ -138,9 +139,10 @@ export default async function AnimeDetailPage({ params, searchParams }: {
     }
   }
 
-  let aniList = providerDetails ? null : await getAniListAnime(id);
-  if (!providerDetails && !aniList && titleParam) aniList = await getAniListAnimeByTitle(titleParam);
-  if (!providerDetails && !aniList) return <main className="min-h-screen bg-[#101010] px-5 py-20 text-center"><p className="text-xs font-bold tracking-[.25em] text-[var(--accent)]">F ANIME</p><h1 className="mt-4 text-3xl font-black">Anime details unavailable</h1><p className="mx-auto mt-3 max-w-lg text-sm leading-7 text-neutral-400">The selected provider could not return details for this title, and general catalog metadata was not found. You can still search for another title.</p><Link href="/search" className="mt-7 inline-block rounded-lg bg-[var(--accent)] px-5 py-3 text-sm font-bold text-black">Back to search</Link></main>;
+  const jikanAnime = id.startsWith("mal-") ? await getJikanAnime(id.slice(4)) : null;
+  let aniList = providerDetails || jikanAnime ? null : await getAniListAnime(id);
+  if (!providerDetails && !aniList && !jikanAnime && titleParam) aniList = await getAniListAnimeByTitle(titleParam);
+  if (!providerDetails && !aniList && !jikanAnime) return <main className="min-h-screen bg-[#101010] px-5 py-20 text-center"><p className="text-xs font-bold tracking-[.25em] text-[var(--accent)]">F ANIME</p><h1 className="mt-4 text-3xl font-black">Anime details unavailable</h1><p className="mx-auto mt-3 max-w-lg text-sm leading-7 text-neutral-400">The selected provider could not return details for this title, and general catalog metadata was not found. You can still search for another title.</p><Link href="/search" className="mt-7 inline-block rounded-lg bg-[var(--accent)] px-5 py-3 text-sm font-bold text-black">Back to search</Link></main>;
   let anivexaEpisodes: ProviderEpisode[] = [];
   const anivexaBaseUrl = process.env.ANIVEXA_API_BASE_URL?.trim();
   if (anivexaBaseUrl && /^\d+$/.test(id)) {
@@ -157,14 +159,16 @@ export default async function AnimeDetailPage({ params, searchParams }: {
     groupedAnivexaEpisodes.set(episode.number, group);
   }
 
-  const title = providerDetails?.title || aniList?.title.english || aniList?.title.romaji || aniList?.title.native || "Anime";
-  const image = providerDetails?.image || aniList?.coverImage.large;
-  const background = providerDetails?.background || aniList?.bannerImage;
-  const description = providerDetails?.description || aniList?.description?.replace(/<[^>]*>/g, "");
-  const genres = providerDetails?.genres ?? aniList?.genres ?? [];
+  const title = providerDetails?.title || aniList?.title.english || aniList?.title.romaji || aniList?.title.native || (jikanAnime ? jikanTitle(jikanAnime) : null) || "Anime";
+  const image = providerDetails?.image || aniList?.coverImage.large || (jikanAnime ? jikanImage(jikanAnime) : undefined);
+  const background = providerDetails?.background || aniList?.bannerImage || jikanAnime?.trailer?.images?.maximum_image_url;
+  const description = providerDetails?.description || aniList?.description?.replace(/<[^>]*>/g, "") || jikanAnime?.synopsis;
+  const genres = providerDetails?.genres ?? aniList?.genres ?? jikanAnime?.genres?.map((genre) => genre.name) ?? [];
   const metadata = providerDetails
     ? [providerDetails.year, providerDetails.type, providerDetails.languages.join(" / ")].filter(Boolean).join(" · ")
-    : [aniList?.seasonYear, aniList?.format, aniList?.status, aniList?.episodes ? `${aniList.episodes} episodes` : null, aniList?.averageScore ? `Score ${aniList.averageScore}%` : null].filter(Boolean).join(" · ");
+    : jikanAnime && !aniList
+      ? [jikanAnime.year, jikanAnime.type, jikanAnime.status, jikanAnime.episodes ? `${jikanAnime.episodes} episodes` : null, jikanAnime.score ? `MAL score ${jikanAnime.score}` : null].filter(Boolean).join(" · ")
+      : [aniList?.seasonYear, aniList?.format, aniList?.status, aniList?.episodes ? `${aniList.episodes} episodes` : null, aniList?.averageScore ? `Score ${aniList.averageScore}%` : null].filter(Boolean).join(" · ");
 
   return <main className="min-h-screen">
     <div className="relative min-h-72 border-b border-white/10 bg-[#181818]">
