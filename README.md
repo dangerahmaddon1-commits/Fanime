@@ -6,7 +6,8 @@ F Anime is an orange-accented anime discovery experience built with Next.js 15, 
 - Next.js 15 App Router + TypeScript
 - Tailwind CSS 4
 - Vercel hosting with native Next.js support
-- AniList GraphQL for general anime metadata and airing schedules
+- AniList GraphQL for primary anime metadata, AniList ID mapping and airing schedules
+- Jikan v4 as a free, keyless MyAnimeList metadata/catalogue fallback
 - Optional Renime API adapter for AnimeSalt and WatchAnimeWorld catalogs, episode details and provider-supplied embeds
 - Optional Anivexa adapter for multi-provider SUB/DUB episode availability and watch-source lookup
 - Firebase Web SDK for optional browser analytics; authentication is not enabled in the app yet
@@ -23,7 +24,9 @@ Set `RENIME_DEFAULT_PROVIDER` to `animesalt` or `watchanimeworld`. If `RENIME_AP
 
 Set `ANIVEXA_API_BASE_URL` to a running Anivexa API instance (without a trailing slash) to enable its aggregated provider episode lists and SUB/DUB watch-source lookup. Anivexa's supplied repository is a self-hosted Node.js API and does not publish a verified public API base URL. Its `wreq-js` dependency uses platform-specific native bindings, so the API server needs a compatible Node.js host; it cannot be assumed to run unchanged on Cloudflare Workers. The F Anime adapter only calls its public JSON endpoints.
 
-When the Renime API is configured, F Anime tries it for provider search, title details, episodes and embed server lists. If provider search is unavailable, search falls back to AniList. General anime details and the weekly airing schedule use AniList.
+When the Renime API is configured, F Anime tries it for provider search, title details, episodes and embed server lists. AniList is the primary general catalogue and airing-schedule source. If AniList is unavailable during unfiltered search or trending discovery, F Anime falls back to Jikan v4. Jikan-backed links use a `mal-` ID prefix and open metadata pages using the MAL ID; where possible, the page resolves that MAL ID to an AniList ID before requesting optional episode-provider data.
+
+Jikan is an unofficial, read-only API that parses public MyAnimeList data. It does not provide playable video streams or guarantee episode sources. The public service documents limits of 3 requests per second and 60 requests per minute, so Jikan responses are cached for 24 hours in Next.js. Handle HTTP 429 and upstream downtime as normal fallback conditions. See [Jikan](https://jikan.moe/) and its [REST API repository](https://github.com/jikan-me/jikan-rest).
 
 The previously tested `renime.top` API routes returned HTTP 404. The built-in direct adapters therefore do not depend on that host. They may still be blocked by upstream anti-bot rules; if that happens, search and metadata fall back to AniList, and playback remains unavailable until a provider endpoint is reachable. The selectors and endpoint behavior are adapted from the supplied Renime-API repository (ISC, Dark & Pyro Team).
 
@@ -40,7 +43,7 @@ Import this existing GitHub repository into Vercel and select the Next.js framew
 
 ## Current implementation
 - Orange F Anime branding and responsive homepage
-- Anime search with AniList fallback and optional Renime provider search
+- Anime search with optional Renime provider search, AniList primary metadata, and Jikan fallback for unfiltered catalogue/search requests
 - Anime detail pages with Renime season/episode data and deduplicated Anivexa multi-provider SUB/DUB episode availability when configured
 - Weekly airing schedule with a date strip, displayed in Pakistan time
 - Watch pages with provider fallback, HTTPS iframe embeds and HLS.js playback when Anivexa is configured

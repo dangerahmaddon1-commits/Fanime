@@ -8,6 +8,7 @@ export const metadata: Metadata = {
 import type { Metadata } from "next";
 import { getRenimeProviderOrder } from "@/lib/providers/provider-order";
 import type { ProviderAnime, ProviderHome } from "@/lib/providers/types";
+import { getJikanTopAnime, jikanImage, jikanTitle } from "@/lib/jikan";
 
 export const dynamic = "force-dynamic";
 
@@ -37,11 +38,27 @@ async function getTrending(): Promise<CatalogCard[]> {
       body: JSON.stringify({ query: `query { Page(page: 1, perPage: 12) { media(type: ANIME, isAdult: false, sort: [TRENDING_DESC]) { id title { romaji english } coverImage { large } averageScore } } }` }),
       next: { revalidate: 900 },
     });
-    if (!response.ok) return [];
-    const json = await response.json();
-    const items: TrendingAnime[] = json.data?.Page?.media ?? [];
-    return items.map((anime) => ({ id: String(anime.id), title: anime.title.english || anime.title.romaji || "Anime", image: anime.coverImage.large, meta: anime.averageScore ? `★ ${anime.averageScore}%` : "Trending" }));
-  } catch { return []; }
+    if (response.ok) {
+      const json = await response.json();
+      const items: TrendingAnime[] = json.data?.Page?.media ?? [];
+      if (items.length) {
+        return items.map((anime) => ({ id: String(anime.id), title: anime.title.english || anime.title.romaji || "Anime", image: anime.coverImage.large, meta: anime.averageScore ? `★ ${anime.averageScore}%` : "Trending" }));
+      }
+    }
+  } catch {
+    // Use Jikan if AniList is temporarily unavailable.
+  }
+  try {
+    const items = await getJikanTopAnime(12);
+    return items.map((anime) => ({
+      id: `mal-${anime.mal_id}`,
+      title: jikanTitle(anime),
+      image: jikanImage(anime),
+      meta: anime.score ? `★ ${anime.score.toFixed(1)} · MAL` : "Popular on MyAnimeList",
+    }));
+  } catch {
+    return [];
+  }
 }
 
 async function getSchedulePreview(): Promise<AiringPreview[]> {
