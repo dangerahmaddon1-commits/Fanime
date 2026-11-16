@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { getRenimeProviderOrder } from "@/lib/providers/provider-order";
-import type { RenimeApiProvider } from "@/lib/providers/renime-api";
+import type { AnimeProvider } from "@/lib/providers/types";
 import type { ProviderDetails, ProviderEpisode } from "@/lib/providers/types";
 import { AnivexaApiProvider } from "@/lib/providers/anivexa-api";
 
@@ -56,12 +56,12 @@ export default async function AnimeDetailPage({ params, searchParams }: {
   const { season: seasonParam, title: titleParam } = await searchParams;
   const baseUrl = process.env.RENIME_API_BASE_URL?.trim();
   let providerDetails: ProviderDetails | null = null;
-  let detailProvider: RenimeApiProvider | null = null;
+  let detailProvider: AnimeProvider | null = null;
   let providerError = false;
   let selectedSeason = Math.max(1, Number(seasonParam) || 1);
   let episodeList: ProviderEpisode[] = [];
 
-  if (baseUrl) {
+  {
     try {
       let detailsSucceeded = false;
       for (const provider of getRenimeProviderOrder(baseUrl)) {
