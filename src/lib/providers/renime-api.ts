@@ -25,9 +25,14 @@ function list(value: unknown): unknown[] {
   }
   return [];
 }
-function safeImage(value: unknown): string | undefined {
+function safeHttpsUrl(value: unknown): string | undefined {
   const candidate = stringValue(value);
-  return candidate.startsWith("https://") ? candidate : undefined;
+  if (candidate.startsWith("https://")) return candidate;
+  if (candidate.startsWith("//")) return `https:${candidate}`;
+  return undefined;
+}
+function safeImage(value: unknown): string | undefined {
+  return safeHttpsUrl(value);
 }
 
 /** Adapter for the documented Renime API JSON contract. */
@@ -138,7 +143,7 @@ export class RenimeApiProvider implements AnimeProvider {
     return list(payload.servers ?? payload).map((item, index) => {
       const row = record(item) as RenimeServer;
       const name = stringValue(row.name) || `Server ${row.server ?? index + 1}`;
-      const url = stringValue(row.url);
+      const url = safeHttpsUrl(row.url) ?? "";
       const language: AudioLanguage = normalizeAudioLanguage(name);
       return {
         id: `${this.id}-${row.server ?? index}`,
