@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { RenimeApiProvider } from "@/lib/providers/renime-api";
+import type { ProviderDetails } from "@/lib/providers/types";
 
 type AniListAnime = {
   id: number;
@@ -35,7 +36,7 @@ export default async function AnimeDetailPage({ params }: { params: Promise<{ id
   const { id } = await params;
   const baseUrl = process.env.RENIME_API_BASE_URL?.trim();
   const providerKey = process.env.RENIME_DEFAULT_PROVIDER === "watchanimeworld" ? "watchanimeworld" : "animesalt";
-  let providerDetails = null;
+  let providerDetails: ProviderDetails | null = null;
   let providerError = false;
 
   if (baseUrl) {
