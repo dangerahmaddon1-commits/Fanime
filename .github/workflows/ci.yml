@@ -6,17 +6,30 @@ on:
   push:
     branches: [main, feat/orange-multilingual-discovery]
 
+permissions:
+  contents: read
+
+concurrency:
+  group: f-anime-checks-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  build:
+  validate:
+    name: Install, lint, typecheck and Cloudflare build
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: 20
       - name: Install dependencies
         run: npm install --no-audit --no-fund
-      - name: Build Cloudflare Worker
-        run: npm run build
-      - name: Type-check
+      - name: Lint
+        run: npm run lint
+      - name: Type check
         run: npm run typecheck
+      - name: Build for Cloudflare
+        run: npm run build
