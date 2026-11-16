@@ -7,7 +7,7 @@ export const metadata: Metadata = {
 };
 import type { Metadata } from "next";
 import { getRenimeProviderOrder } from "@/lib/providers/provider-order";
-import { searchJikanAnime, jikanImage, jikanTitle } from "@/lib/jikan";
+import { getJikanTopAnime, searchJikanAnime, jikanImage, jikanTitle } from "@/lib/jikan";
 
 type AniListAnime = {
   id: number;
@@ -78,6 +78,14 @@ async function searchAnime(filters: Filters): Promise<{ items: SearchItem[]; sou
     }
   } catch {
     // Jikan provides a second, keyless metadata catalog if AniList is unavailable.
+  }
+
+  if (!filters.q && !hasFilters) {
+    const fallback = await getJikanTopAnime(24);
+    return {
+      source: "Jikan · MyAnimeList",
+      items: fallback.map((anime) => ({ id: `mal-${anime.mal_id}`, title: jikanTitle(anime), image: jikanImage(anime), meta: [anime.year, anime.type, anime.score ? `★ ${anime.score}` : null].filter(Boolean).join(" · ") })),
+    };
   }
 
   if (filters.q && !hasFilters) {
