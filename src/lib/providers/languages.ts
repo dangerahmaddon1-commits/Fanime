@@ -12,7 +12,9 @@ const aliases: Record<string, AudioLanguage> = {
 
 export function normalizeAudioLanguage(value: string | null | undefined): AudioLanguage {
   if (!value?.trim()) return "unknown";
-  return aliases[value.trim().toLowerCase()] ?? "unknown";
+  const normalized = value.trim().toLowerCase();
+  if (aliases[normalized]) return aliases[normalized];
+  return AUDIO_LANGUAGES.find((language) => normalized.includes(language.toLowerCase())) ?? "unknown";
 }
 
 export function getSupportedAudioLanguages(): readonly AudioLanguage[] {
