@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: { default: "Fanime — Your anime universe", template: "%s | Fanime" },
-  description: "Discover anime, explore episodes, and keep track of what you want to watch.",
+  title: { default: "FM — F Anime", template: "%s | FM F Anime" },
+  description: "Discover anime, explore new episodes, and find titles across Japanese, English, Hindi, Tamil, Telugu and more.",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
