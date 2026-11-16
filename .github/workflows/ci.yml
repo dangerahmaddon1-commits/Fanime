@@ -53,4 +53,7 @@ jobs:
           curl --silent --show-error --fail --max-time 30 http://127.0.0.1:8787/home -o /tmp/fanime-home.html
           curl --silent --show-error --fail --max-time 30 http://127.0.0.1:8787/search -o /tmp/fanime-search.html
           curl --silent --show-error --fail --max-time 30 http://127.0.0.1:8787/schedule -o /tmp/fanime-schedule.html
+          curl --silent --show-error --fail --max-time 40 "http://127.0.0.1:8787/search?q=Naruto" -o /tmp/fanime-provider-search.html
+          curl --silent --show-error --fail --max-time 40 "http://127.0.0.1:8787/anime/naruto?title=Naruto" -o /tmp/fanime-provider-detail.html
+          curl --silent --show-error --fail --max-time 40 http://127.0.0.1:8787/watch/naruto/naruto-1x1 -o /tmp/fanime-provider-watch.html
           curl --silent --show-error --fail --max-time 10 http://127.0.0.1:8787/watch/anivexa/1/sub/1 -o /tmp/fanime-watch.html
