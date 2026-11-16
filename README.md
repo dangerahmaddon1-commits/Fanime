@@ -20,7 +20,7 @@ F Anime is an orange-accented anime discovery experience built with Next.js 15, 
 ## Optional Renime API
 Set `RENIME_API_BASE_URL` to the base URL of a running Renime API instance (without `/api` at the end). Set `RENIME_DEFAULT_PROVIDER` to `animesalt` or `watchanimeworld`.
 
-Set `ANIVEXA_API_BASE_URL` to a running Anivexa API instance (without a trailing slash) to enable its aggregated provider episode lists and SUB/DUB watch-source lookup. Anivexa's supplied repository is a self-hosted Node.js API; it does not publish a verified public API base URL. Its dependencies and provider integrations have not yet been validated on Cloudflare Workers, so do not assume the API itself can be deployed there unchanged.
+Set `ANIVEXA_API_BASE_URL` to a running Anivexa API instance (without a trailing slash) to enable its aggregated provider episode lists and SUB/DUB watch-source lookup. Anivexa's supplied repository is a self-hosted Node.js API and does not publish a verified public API base URL. Its `wreq-js` dependency uses platform-specific native bindings, so the API server needs a compatible Node.js host; it cannot be assumed to run unchanged on Cloudflare Workers. The F Anime adapter only calls its public JSON endpoints.
 
 When the Renime API is configured, F Anime tries it for provider search, title details, episodes and embed server lists. If provider search is unavailable, search falls back to AniList. General anime details and the weekly airing schedule use AniList.
 
