@@ -41,7 +41,7 @@ export default async function AnivexaWatchPage({ params, searchParams }: {
   const selected = sources[selectedIndex];
 
   return <main className="min-h-screen bg-[#101010]">
-    <header className="border-b border-white/10"><div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-5"><Link href="/" className="text-xl font-black">F <span className="text-[var(--accent)]">ANIME</span></Link><Link href={`/anime/${encodeURIComponent(anilistId)}`} className="text-sm text-neutral-300 hover:text-white">← Anime details</Link></div></header>
+    <header className="border-b border-white/10"><div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-5"><Link href="/home" className="text-xl font-black">F <span className="text-[var(--accent)]">ANIME</span></Link><Link href={`/anime/${encodeURIComponent(anilistId)}`} className="text-sm text-neutral-300 hover:text-white">← Anime details</Link></div></header>
     <section className="mx-auto max-w-7xl px-5 py-8">
       <p className="text-xs font-bold tracking-[.25em] text-[var(--accent)]">ANIVEXA MULTI-PROVIDER PLAYER</p>
       <h1 className="mt-2 text-2xl font-black">Episode {episode} · {audio.toUpperCase()}</h1>
