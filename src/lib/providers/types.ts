@@ -22,6 +22,15 @@ export interface ProviderEpisode {
   url?: string;
   languages?: AudioLanguage[];
 }
+export interface ProviderHome {
+  newestDrops: ProviderAnime[];
+  newAnimeArrivals: ProviderAnime[];
+  cartoonSeries: ProviderAnime[];
+  animeMovies: ProviderAnime[];
+  cartoonFilms: ProviderAnime[];
+  mostWatchedShows: ProviderAnime[];
+  mostWatchedFilms: ProviderAnime[];
+}
 export interface ProviderDetails {
   id: string;
   title: string;
@@ -51,6 +60,7 @@ export interface SourceOptions { episodeId: string; language?: AudioLanguage; }
 export interface AnimeProvider {
   readonly id: string;
   search(options: SearchOptions): Promise<ProviderAnime[]>;
+  home(): Promise<ProviderHome>;
   details(animeId: string): Promise<ProviderDetails>;
   episodes(options: EpisodeOptions): Promise<ProviderEpisode[]>;
   sources(options: SourceOptions): Promise<ProviderSource[]>;
