@@ -35,7 +35,7 @@ export async function searchJikanAnime(query: string, limit = 24): Promise<Jikan
 
 export async function getJikanAnime(malId: string | number): Promise<JikanAnime | null> {
   const id = String(malId);
-  if (!/^\\d+$/.test(id)) return null;
+  if (!/^\d+$/.test(id)) return null;
   const payload = await jikanGet<{ data?: JikanAnime }>(`anime/${id}/full`);
   return payload.data ?? null;
 }
