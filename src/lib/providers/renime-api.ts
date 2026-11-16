@@ -1,7 +1,7 @@
 import { normalizeAudioLanguage } from "./languages";
 import type {
   AnimeProvider, AudioLanguage, EpisodeOptions, ProviderAnime, ProviderDetails,
-  ProviderEpisode, ProviderSource, SearchOptions, SourceOptions,
+  ProviderEpisode, ProviderHome, ProviderSource, SearchOptions, SourceOptions,
 } from "./types";
 
 type JsonRecord = Record<string, unknown>;
@@ -65,6 +65,28 @@ export class RenimeApiProvider implements AnimeProvider {
         type: (["series", "movie"].includes(stringValue(row.type)) ? stringValue(row.type) : "unknown") as ProviderAnime["type"],
       };
     }).filter((item) => item.id && item.title);
+  }
+
+  async home(): Promise<ProviderHome> {
+    const payload = record(unwrap(await this.get("api/home")));
+    const mapItems = (value: unknown): ProviderAnime[] => list(value).map((item) => {
+      const row = record(item);
+      return {
+        id: stringValue(row.id),
+        title: stringValue(row.title ?? row.name),
+        image: safeImage(row.image),
+        type: (["series", "movie"].includes(stringValue(row.type)) ? stringValue(row.type) : "unknown") as ProviderAnime["type"],
+      };
+    }).filter((item) => item.id && item.title);
+    return {
+      newestDrops: mapItems(payload.newestDrops),
+      newAnimeArrivals: mapItems(payload.newAnimeArrivals),
+      cartoonSeries: mapItems(payload.cartoonSeries),
+      animeMovies: mapItems(payload.animeMovies),
+      cartoonFilms: mapItems(payload.cartoonFilms),
+      mostWatchedShows: mapItems(payload.mostWatchedShows),
+      mostWatchedFilms: mapItems(payload.mostWatchedFilms),
+    };
   }
 
   async details(animeId: string): Promise<ProviderDetails> {
