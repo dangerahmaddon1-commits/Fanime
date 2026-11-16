@@ -1,4 +1,11 @@
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Discover and Search Anime",
+  description: "Search anime by title, genre, year, season, format and airing status.",
+  alternates: { canonical: "/search" },
+};
+import type { Metadata } from "next";
 import { getRenimeProviderOrder } from "@/lib/providers/provider-order";
 
 type AniListAnime = {

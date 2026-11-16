@@ -31,6 +31,10 @@ The previously tested `renime.top` API routes returned HTTP 404. The built-in di
 
 The Firebase web app configuration supplied for project `fanime-c94fe` is wired into the client initializer. Optional `NEXT_PUBLIC_FIREBASE_*` variables can override those defaults in local or Cloudflare environments. These configuration values are browser-visible identifiers, not server secrets; secure Firebase services with Firebase Security Rules. Firebase Analytics initializes only in supported browsers and is optional, so it will not block rendering. Authentication is not wired up yet.
 
+## SEO and search indexing
+
+Set `NEXT_PUBLIC_SITE_URL` to the exact public origin after the Cloudflare Workers hostname or custom domain is known (for example, `https://your-real-hostname`). This value powers canonical metadata, `robots.txt` sitemap discovery and `sitemap.xml`. The sitemap lists the public landing, catalog, discovery and schedule routes; anime detail pages generate title, description and social metadata dynamically. Do not guess this URL before the production hostname exists.
+
 ## Cloudflare
 Run `npx opennextjs-cloudflare build` to build the Worker. `npm run build` runs the underlying Next.js build; `npm run preview` builds the Worker and starts the local Workers preview. Deploy with `npm run deploy` only after the account, bindings and environment variables have been configured and reviewed. This project uses Cloudflare Workers, not Vercel or static Pages export.
 

@@ -1,5 +1,12 @@
 import Link from "next/link";
 
+export const metadata: Metadata = {
+  title: "Weekly Anime Release Schedule",
+  description: "See upcoming anime episodes and airing times in Pakistan Standard Time.",
+  alternates: { canonical: "/schedule" },
+};
+import type { Metadata } from "next";
+
 type Airing = { id: number; airingAt: number; episode: number; media: { id: number; title: { romaji?: string; english?: string }; coverImage: { large: string }; format?: string } };
 
 function dateKey(date: Date): string {

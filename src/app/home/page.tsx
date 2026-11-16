@@ -1,4 +1,11 @@
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Anime Catalog & Trending Anime",
+  description: "Browse trending anime, latest episodes, new arrivals and anime movies on F Anime.",
+  alternates: { canonical: "/home" },
+};
+import type { Metadata } from "next";
 import { getRenimeProviderOrder } from "@/lib/providers/provider-order";
 import type { ProviderAnime, ProviderHome } from "@/lib/providers/types";
 
