@@ -1,4 +1,31 @@
+import Link from "next/link";
+
 const languageOptions = ["Japanese", "English", "Hindi", "Tamil", "Telugu", "Korean", "Chinese"];
+
+type TrendingAnime = {
+  id: number;
+  title: { romaji?: string; english?: string };
+  coverImage: { large: string };
+  averageScore?: number;
+};
+
+async function getTrending(): Promise<TrendingAnime[]> {
+  try {
+    const response = await fetch("https://graphql.anilist.co", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify({
+        query: `query { Page(page: 1, perPage: 12) { media(type: ANIME, isAdult: false, sort: [TRENDING_DESC]) { id title { romaji english } coverImage { large } averageScore } } }`,
+      }),
+      next: { revalidate: 900 },
+    });
+    if (!response.ok) return [];
+    const json = await response.json();
+    return json.data?.Page?.media ?? [];
+  } catch {
+    return [];
+  }
+}
 
 const discoveryCards = [
   { title: "Trending anime", detail: "Explore popular anime titles right now.", tag: "POPULAR NOW", href: "/search" },
@@ -6,16 +33,17 @@ const discoveryCards = [
   { title: "Explore by language", detail: "Find titles across the languages you enjoy.", tag: "MORE WAYS TO WATCH", href: "/search" },
 ];
 
-export default function HomePage() {
+export default async function HomePage() {
+  const trending = await getTrending();
   return (
     <main className="min-h-screen overflow-hidden">
       <header className="sticky top-0 z-20 border-b border-white/10 bg-[#101010]/85 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4">
-          <a href="/" aria-label="F Anime home" className="text-xl font-black tracking-tight">F <span className="text-[var(--accent)]">ANIME</span></a>
+          <Link href="/" aria-label="F Anime home" className="text-xl font-black tracking-tight">F <span className="text-[var(--accent)]">ANIME</span></Link>
           <nav className="flex items-center gap-5 text-sm text-neutral-300 sm:gap-8">
-            <a href="/search" className="transition hover:text-white">Discover</a>
-            <a href="/schedule" className="transition hover:text-white">Schedule</a>
-            <a href="/search" className="rounded-full border border-[var(--accent)]/60 px-4 py-2 font-semibold text-[var(--accent)] transition hover:bg-[var(--accent)] hover:text-black">Explore anime</a>
+            <Link href="/search" className="transition hover:text-white">Discover</Link>
+            <Link href="/schedule" className="transition hover:text-white">Schedule</Link>
+            <Link href="/search" className="rounded-full border border-[var(--accent)]/60 px-4 py-2 font-semibold text-[var(--accent)] transition hover:bg-[var(--accent)] hover:text-black">Explore anime</Link>
           </nav>
         </div>
       </header>
@@ -27,8 +55,8 @@ export default function HomePage() {
             <h1 className="max-w-3xl text-5xl font-black leading-[1.02] tracking-tight sm:text-7xl">Every story.<br /><span className="text-[var(--accent)]">One place.</span></h1>
             <p className="mt-7 max-w-xl text-lg leading-8 text-neutral-400">Discover anime, keep up with new episodes, and find shows in the languages you love.</p>
             <div className="mt-9 flex flex-wrap gap-3">
-              <a href="/search" className="rounded-lg bg-[var(--accent)] px-6 py-3 font-bold text-black transition hover:brightness-110">Browse anime <span className="ml-2">→</span></a>
-              <a href="/schedule" className="rounded-lg border border-white/15 px-6 py-3 font-semibold text-white transition hover:border-white/40">View schedule</a>
+              <Link href="/search" className="rounded-lg bg-[var(--accent)] px-6 py-3 font-bold text-black transition hover:brightness-110">Browse anime <span className="ml-2">→</span></Link>
+              <Link href="/schedule" className="rounded-lg border border-white/15 px-6 py-3 font-semibold text-white transition hover:border-white/40">View schedule</Link>
             </div>
           </div>
           <div className="rounded-3xl border border-white/10 bg-[#191919]/90 p-6 shadow-2xl shadow-orange-950/20 sm:p-8">
@@ -39,9 +67,13 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-      <section className="mx-auto max-w-7xl px-5 py-20">
+      {trending.length > 0 && <section className="mx-auto max-w-7xl px-5 py-16">
+        <div className="mb-7 flex items-end justify-between gap-4"><div><p className="text-xs font-bold tracking-[.25em] text-[var(--accent)]">POPULAR RIGHT NOW</p><h2 className="mt-2 text-3xl font-bold">Trending anime</h2></div><Link href="/search" className="text-sm font-semibold text-[var(--accent)]">View all →</Link></div>
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">{trending.map((anime) => <Link key={anime.id} href={`/anime/${anime.id}`} className="group overflow-hidden rounded-xl border border-white/10 bg-[#1b1b1b] transition hover:-translate-y-1 hover:border-[var(--accent)]/50"><div className="aspect-[3/4] overflow-hidden"><img src={anime.coverImage.large} alt="" className="h-full w-full object-cover transition duration-300 group-hover:scale-105" loading="lazy" /></div><div className="p-3"><h3 className="line-clamp-2 text-sm font-bold">{anime.title.english || anime.title.romaji}</h3>{anime.averageScore ? <p className="mt-2 text-xs text-[var(--accent)]">★ {anime.averageScore}%</p> : null}</div></Link>)}</div>
+      </section>}
+      <section className="mx-auto max-w-7xl px-5 py-16">
         <div className="mb-8"><p className="text-xs font-bold tracking-[.25em] text-[var(--accent)]">START EXPLORING</p><h2 className="mt-2 text-3xl font-bold">Discover F Anime</h2></div>
-        <div className="grid gap-4 md:grid-cols-3">{discoveryCards.map((item) => <a key={item.tag} href={item.href} className="group rounded-2xl border border-white/10 bg-[#1b1b1b] p-6 transition hover:-translate-y-1 hover:border-[var(--accent)]/50"><p className="text-xs font-bold tracking-widest text-[var(--accent)]">{item.tag}</p><div className="mt-8 flex items-center justify-between"><h3 className="text-xl font-bold">{item.title}</h3><span className="text-xl text-neutral-500 transition group-hover:translate-x-1 group-hover:text-[var(--accent)]">↗</span></div><p className="mt-2 text-sm leading-6 text-neutral-400">{item.detail}</p></a>)}</div>
+        <div className="grid gap-4 md:grid-cols-3">{discoveryCards.map((item) => <Link key={item.tag} href={item.href} className="group rounded-2xl border border-white/10 bg-[#1b1b1b] p-6 transition hover:-translate-y-1 hover:border-[var(--accent)]/50"><p className="text-xs font-bold tracking-widest text-[var(--accent)]">{item.tag}</p><div className="mt-8 flex items-center justify-between"><h3 className="text-xl font-bold">{item.title}</h3><span className="text-xl text-neutral-500 transition group-hover:translate-x-1 group-hover:text-[var(--accent)]">↗</span></div><p className="mt-2 text-sm leading-6 text-neutral-400">{item.detail}</p></Link>)}</div>
       </section>
       <footer className="border-t border-white/10 px-5 py-8 text-center text-sm text-neutral-500">F Anime · Your anime universe</footer>
     </main>
