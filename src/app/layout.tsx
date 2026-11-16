@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: { default: "FM — F Anime", template: "%s | FM F Anime" },
+  title: { default: "F Anime — Your anime universe", template: "%s | F Anime" },
   description: "Discover anime, explore new episodes, and find titles across Japanese, English, Hindi, Tamil, Telugu and more.",
 };
 
