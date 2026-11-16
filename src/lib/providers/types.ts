@@ -21,6 +21,8 @@ export interface ProviderEpisode {
   image?: string;
   url?: string;
   languages?: AudioLanguage[];
+  provider?: string;
+  audio?: "sub" | "dub";
 }
 export interface ProviderHome {
   newestDrops: ProviderAnime[];
