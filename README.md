@@ -9,6 +9,7 @@ F Anime is an orange-accented anime discovery experience built with Next.js 15, 
 - AniList GraphQL for general anime metadata and airing schedules
 - Optional Renime API adapter for AnimeSalt and WatchAnimeWorld catalogs, episode details and provider-supplied embeds
 - Optional Anivexa adapter for multi-provider SUB/DUB episode availability and watch-source lookup
+- Firebase Web SDK for optional browser analytics; authentication is not enabled in the app yet
 - Neon Postgres + Drizzle and account features are planned, not yet connected
 
 ## Local setup
@@ -25,6 +26,10 @@ Set `ANIVEXA_API_BASE_URL` to a running Anivexa API instance (without a trailing
 When the Renime API is configured, F Anime tries it for provider search, title details, episodes and embed server lists. If provider search is unavailable, search falls back to AniList. General anime details and the weekly airing schedule use AniList.
 
 The previously tested `renime.top` API routes returned HTTP 404. The built-in direct adapters therefore do not depend on that host. They may still be blocked by upstream anti-bot rules; if that happens, search and metadata fall back to AniList, and playback remains unavailable until a provider endpoint is reachable. The selectors and endpoint behavior are adapted from the supplied Renime-API repository (ISC, Dark & Pyro Team).
+
+## Firebase analytics
+
+Set the `NEXT_PUBLIC_FIREBASE_*` values from your Firebase web app configuration in `.env.local` and in the Cloudflare Worker environment. The Firebase config values are browser-visible identifiers, not server secrets; secure Firebase services with Firebase Security Rules. Firebase Analytics initializes only in supported browsers and is optional, so it will not block rendering. Authentication is not wired up yet.
 
 ## Cloudflare
 Run `npx opennextjs-cloudflare build` to build the Worker. `npm run build` runs the underlying Next.js build; `npm run preview` builds the Worker and starts the local Workers preview. Deploy with `npm run deploy` only after the account, bindings and environment variables have been configured and reviewed. This project uses Cloudflare Workers, not Vercel or static Pages export.
