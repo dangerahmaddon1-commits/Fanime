@@ -3,8 +3,8 @@ import { normalizeAudioLanguage } from "./languages";
 import type { AnimeProvider, EpisodeOptions, ProviderAnime, ProviderDetails, ProviderEpisode, ProviderHome, ProviderSource, SearchOptions, SourceOptions } from "./types";
 
 const PROVIDERS = {
-  animesalt: { id: "animesalt", name: "AnimeSalt", baseUrl: "https://animesalt.cx" },
-  watchanimeworld: { id: "watchanimeworld", name: "WatchAnimeWorld", baseUrl: "https://watchanimeworld.one" },
+  animesalt: { id: "animesalt", name: "AnimeSalt", baseUrl: "https://animesalt.link" },
+  watchanimeworld: { id: "watchanimeworld", name: "WatchAnimeWorld", baseUrl: "https://watchanimeworld.top" },
 } as const;
 
 type ProviderKey = keyof typeof PROVIDERS;
