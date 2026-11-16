@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getRenimeProviderOrder } from "@/lib/providers/provider-order";
 import type { ProviderDetails, ProviderEpisode } from "@/lib/providers/types";
+import { AnivexaApiProvider } from "@/lib/providers/anivexa-api";
 
 type AniListAnime = {
   id: number;
@@ -81,6 +82,21 @@ export default async function AnimeDetailPage({ params, searchParams }: {
 
   const aniList = providerDetails ? null : await getAniListAnime(id);
   if (!providerDetails && !aniList) notFound();
+  let anivexaEpisodes: ProviderEpisode[] = [];
+  const anivexaBaseUrl = process.env.ANIVEXA_API_BASE_URL?.trim();
+  if (anivexaBaseUrl && /^\\d+$/.test(id)) {
+    try {
+      anivexaEpisodes = await new AnivexaApiProvider(anivexaBaseUrl).episodes(id);
+    } catch {
+      // Keep the page usable if the optional multi-provider API is offline.
+    }
+  }
+  const groupedAnivexaEpisodes = new Map<number, { title: string; image?: string; sub: string[]; dub: string[] }>();
+  for (const episode of anivexaEpisodes) {
+    const group = groupedAnivexaEpisodes.get(episode.number) ?? { title: episode.title || `Episode ${episode.number}`, image: episode.image, sub: [], dub: [] };
+    if (episode.audio && episode.provider && !group[episode.audio].includes(episode.provider)) group[episode.audio].push(episode.provider);
+    groupedAnivexaEpisodes.set(episode.number, group);
+  }
 
   const title = providerDetails?.title || aniList?.title.english || aniList?.title.romaji || aniList?.title.native || "Anime";
   const image = providerDetails?.image || aniList?.coverImage.large;
@@ -99,6 +115,7 @@ export default async function AnimeDetailPage({ params, searchParams }: {
     </div>
     <section className="mx-auto max-w-7xl px-5 py-10">
       <h2 className="text-2xl font-bold">Synopsis</h2><p className="mt-4 max-w-4xl whitespace-pre-line leading-8 text-neutral-300">{description || "No synopsis is available yet."}</p>
+      {anivexaEpisodes.length > 0 && <section className="mt-12"><div className="flex flex-wrap items-end justify-between gap-4"><div><p className="text-xs font-bold tracking-[.25em] text-[var(--accent)]">MULTI-PROVIDER EPISODES</p><h2 className="mt-2 text-2xl font-bold">Available episodes</h2></div><span className="text-sm text-neutral-500">{groupedAnivexaEpisodes.size} unique episodes</span></div><div className="mt-5 space-y-3">{[...groupedAnivexaEpisodes.entries()].sort((a,b)=>a[0]-b[0]).map(([number, episode]) => <article key={number} className="flex flex-wrap items-center gap-4 rounded-xl border border-white/10 bg-[#1b1b1b] p-4">{episode.image && <img src={episode.image} alt="" className="h-14 w-20 rounded-lg object-cover" loading="lazy" />}<div className="min-w-0 flex-1"><p className="font-bold">Episode {number}</p><p className="mt-1 text-sm text-neutral-400">{episode.title}</p><p className="mt-1 text-xs text-neutral-500">{[episode.sub.length ? `SUB: ${episode.sub.join(", ")}` : "", episode.dub.length ? `DUB: ${episode.dub.join(", ")}` : ""].filter(Boolean).join(" · ")}</p></div><div className="flex gap-2">{episode.sub.length > 0 && <Link href={`/watch/anivexa/${id}/sub/${number}`} className="rounded-lg border border-[var(--accent)]/50 px-3 py-2 text-xs font-bold text-[var(--accent)]">SUB</Link>}{episode.dub.length > 0 && <Link href={`/watch/anivexa/${id}/dub/${number}`} className="rounded-lg border border-[var(--accent)]/50 px-3 py-2 text-xs font-bold text-[var(--accent)]">DUB</Link>}</div></article>)}</div></section>}
       {providerDetails ? <section className="mt-12">
         <div className="flex flex-wrap items-end justify-between gap-4"><div><p className="text-xs font-bold tracking-[.25em] text-[var(--accent)]">EPISODE GUIDE</p><h2 className="mt-2 text-2xl font-bold">Episodes</h2></div><span className="text-sm text-neutral-500">{episodeList.length} listed</span></div>
         {providerDetails.seasons.length > 1 && <div className="mt-5 flex flex-wrap gap-2">{providerDetails.seasons.map((season) => <Link key={season} href={`?season=${season}`} className={`rounded-lg border px-4 py-2 text-sm ${season === selectedSeason ? "border-[var(--accent)] bg-[var(--accent)]/10 text-[var(--accent)]" : "border-white/15 text-neutral-300 hover:border-white/40"}`}>Season {season}</Link>)}</div>}
