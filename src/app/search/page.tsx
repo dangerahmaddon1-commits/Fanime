@@ -92,7 +92,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
   }
 
   return <main className="min-h-screen bg-[#101010]">
-    <header className="border-b border-white/10"><div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-5"><Link href="/" className="text-xl font-black tracking-tight">F <span className="text-[var(--accent)]">ANIME</span></Link><nav className="flex gap-5 text-sm text-neutral-300"><Link href="/search" className="text-white">Discover</Link><Link href="/schedule">Schedule</Link></nav></div></header>
+    <header className="border-b border-white/10"><div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-5"><Link href="/home" className="text-xl font-black tracking-tight">F <span className="text-[var(--accent)]">ANIME</span></Link><nav className="flex gap-5 text-sm text-neutral-300"><Link href="/search" className="text-white">Discover</Link><Link href="/schedule">Schedule</Link></nav></div></header>
     <section className="mx-auto max-w-7xl px-5 py-10">
       <p className="text-xs font-bold tracking-[.25em] text-[var(--accent)]">F ANIME DISCOVERY</p><h1 className="mt-3 text-4xl font-black">Find your next anime.</h1>
       <form action="/search" className="mt-8 grid gap-3 rounded-2xl border border-white/10 bg-[#181818] p-4 sm:grid-cols-2 lg:grid-cols-4">
