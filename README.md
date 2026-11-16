@@ -27,7 +27,7 @@ When the Renime API is configured, F Anime tries it for provider search, title d
 The public `renime.top` address previously checked returned HTTP 404 for the tested API routes, so it is not configured as a working API host. The adapter follows the endpoints and response structures in the supplied Renime-API repository; a running instance still needs to be configured and tested.
 
 ## Cloudflare
-Run `npm run build` to build the OpenNext Worker and `npm run preview` to preview it. Deploy with `npm run deploy` only after the account, bindings and environment variables have been configured and reviewed. This project uses Cloudflare Workers, not Vercel or static Pages export.
+Run `npx opennextjs-cloudflare build` to build the Worker. `npm run build` runs the underlying Next.js build; `npm run preview` builds the Worker and starts the local Workers preview. Deploy with `npm run deploy` only after the account, bindings and environment variables have been configured and reviewed. This project uses Cloudflare Workers, not Vercel or static Pages export.
 
 ## Current implementation
 - Orange F Anime branding and responsive homepage
