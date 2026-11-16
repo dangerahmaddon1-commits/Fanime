@@ -59,7 +59,10 @@ export class DirectRenimeProvider implements AnimeProvider {
       "Accept": options.method === "POST" ? "*/*" : "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
       "Accept-Language": "en-US,en;q=0.9",
     });
-    if (options.referer) headers.set("Referer", options.referer);
+    if (options.referer) {
+      headers.set("Referer", options.referer);
+      headers.set("X-Requested-With", "XMLHttpRequest");
+    }
     if (options.method === "POST") {
       headers.set("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
       headers.set("Origin", this.baseUrl);
@@ -70,7 +73,7 @@ export class DirectRenimeProvider implements AnimeProvider {
       headers,
       body: options.body,
       cache: "no-store",
-      signal: AbortSignal.timeout(10000),
+      signal: AbortSignal.timeout(8000),
     });
     if (!response.ok) throw new Error(`${this.name} returned HTTP ${response.status}`);
     return response.text();
