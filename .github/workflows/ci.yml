@@ -33,3 +33,24 @@ jobs:
         run: npm run typecheck
       - name: Build for Cloudflare
         run: npx opennextjs-cloudflare build
+      - name: Smoke-test Worker routes locally
+        shell: bash
+        run: |
+          npx wrangler dev --local --port 8787 > /tmp/fanime-wrangler.log 2>&1 &
+          WRANGLER_PID=$!
+          trap 'kill "$WRANGLER_PID" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 30); do
+            if curl --silent --show-error --fail --max-time 10 http://127.0.0.1:8787/ -o /tmp/fanime-landing.html; then
+              break
+            fi
+            sleep 2
+          done
+          if [ ! -s /tmp/fanime-landing.html ]; then
+            cat /tmp/fanime-wrangler.log
+            exit 1
+          fi
+          grep -q "F ANIME" /tmp/fanime-landing.html
+          curl --silent --show-error --fail --max-time 30 http://127.0.0.1:8787/home -o /tmp/fanime-home.html
+          curl --silent --show-error --fail --max-time 30 http://127.0.0.1:8787/search -o /tmp/fanime-search.html
+          curl --silent --show-error --fail --max-time 30 http://127.0.0.1:8787/schedule -o /tmp/fanime-schedule.html
+          curl --silent --show-error --fail --max-time 10 http://127.0.0.1:8787/watch/anivexa/1/sub/1 -o /tmp/fanime-watch.html
