@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { RenimeApiProvider } from "@/lib/providers/renime-api";
+import { getRenimeProviderOrder } from "@/lib/providers/provider-order";
 import type { ProviderDetails, ProviderEpisode } from "@/lib/providers/types";
 
 type AniListAnime = {
@@ -39,7 +39,6 @@ export default async function AnimeDetailPage({ params, searchParams }: {
   const { id } = await params;
   const { season: seasonParam } = await searchParams;
   const baseUrl = process.env.RENIME_API_BASE_URL?.trim();
-  const providerKey = process.env.RENIME_DEFAULT_PROVIDER === "watchanimeworld" ? "watchanimeworld" : "animesalt";
   let providerDetails: ProviderDetails | null = null;
   let providerError = false;
   let selectedSeason = Math.max(1, Number(seasonParam) || 1);
@@ -47,14 +46,32 @@ export default async function AnimeDetailPage({ params, searchParams }: {
 
   if (baseUrl) {
     try {
-      const provider = new RenimeApiProvider(baseUrl, providerKey);
-      providerDetails = await provider.details(id);
-      if (providerDetails.seasons.length && !providerDetails.seasons.includes(selectedSeason)) {
-        selectedSeason = providerDetails.seasons[0];
+      for (const provider of getRenimeProviderOrder(baseUrl)) {
+        try {
+          const candidate = await provider.details(id);
+          if (!providerDetails || candidate.episodes.length > providerDetails.episodes.length) {
+            providerDetails = candidate;
+          }
+          if (candidate.episodes.length) break;
+        } catch {
+          // Try the alternate catalog before falling back to AniList.
+        }
       }
-      episodeList = providerDetails.episodes;
-      if (seasonParam && selectedSeason !== 1) {
-        episodeList = await provider.episodes({ animeId: id, season: selectedSeason });
+      if (providerDetails) {
+        if (providerDetails.seasons.length && !providerDetails.seasons.includes(selectedSeason)) {
+          selectedSeason = providerDetails.seasons[0];
+        }
+        episodeList = providerDetails.episodes;
+        if (seasonParam && selectedSeason !== 1) {
+          for (const provider of getRenimeProviderOrder(baseUrl)) {
+            try {
+              const candidateEpisodes = await provider.episodes({ animeId: id, season: selectedSeason });
+              if (candidateEpisodes.length) { episodeList = candidateEpisodes; break; }
+            } catch {
+              // Keep the episode list returned by the details endpoint.
+            }
+          }
+        }
       }
     } catch {
       providerError = true;
