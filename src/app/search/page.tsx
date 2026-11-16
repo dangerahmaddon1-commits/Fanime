@@ -14,8 +14,6 @@ type SearchItem = { id: string; title: string; image?: string; type?: string; me
 
 async function searchAnime(query: string): Promise<{ items: SearchItem[]; source: string; notice?: string }> {
   const baseUrl = process.env.RENIME_API_BASE_URL?.trim();
-  const providerKey = process.env.RENIME_DEFAULT_PROVIDER === "watchanimeworld" ? "watchanimeworld" : "animesalt";
-
   if (query && baseUrl) {
     try {
       for (const provider of getRenimeProviderOrder(baseUrl)) {
