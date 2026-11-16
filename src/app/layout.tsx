@@ -9,7 +9,6 @@ export const metadata: Metadata = {
   applicationName: "F Anime",
   title: { default: "F Anime — Your anime universe", template: "%s | F Anime" },
   description: "Discover anime, explore new episodes, and find titles across Japanese, English, Hindi, Tamil, Telugu and more.",
-  alternates: { canonical: "/" },
   robots: {
     index: true,
     follow: true,
