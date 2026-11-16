@@ -12,7 +12,7 @@ F Anime is an orange-accented anime discovery experience built with Next.js 15, 
 - Neon Postgres + Drizzle and account features are planned, not yet connected
 
 ## Local setup
-1. Use Node.js 20 or newer.
+1. Use Node.js 22.12 or newer (required by the current Wrangler toolchain).
 2. Run `npm install`.
 3. Copy `.env.example` to `.env.local`.
 4. Run `npm run dev`.
